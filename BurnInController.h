@@ -10,7 +10,7 @@
 using namespace components;
 using namespace std;
 
-void(*resetFunc) (void) = 0; //declare reset function @ address 0
+
 
 #define LedPin		2
 #define heatPin1	3
@@ -22,6 +22,16 @@ void(*resetFunc) (void) = 0; //declare reset function @ address 0
 
 
 struct SystemState {
+
+	SystemState() {
+		this->running = false;
+		this->paused = false;
+		this->is150On =false;
+		this->tempSP = 0;
+		this->setCurrent = 150;
+		this->elapsed = 0;
+	}
+
 	bool running = false;
 	bool paused = false;
 	bool is150On  = true;
@@ -33,13 +43,30 @@ struct SystemState {
 	bool IsRunning() {
 		return this->running || this->paused;
 	}
+
+	void Print() {
+		cout << "SystemState: " << endl;
+		cout << "Running: " << running << " Paused: " << paused << " Is150On: " << is150On << " tempSP: " << tempSP << " setCurrent: " << setCurrent << " Elapsed: " << elapsed << endl;
+	}
 };
 
 struct SystemSettings {
+	SystemSettings() {
+		this->switchingEnabled = false;
+		this->current = 150;
+		this->current2 = 120;
+		this->setTemperature = 85;
+	}
+
 	bool switchingEnabled = false;
 	int current = 150;
 	int current2 = 120;
 	int setTemperature = 85;
+
+	void Print() {
+		cout << "SystemSettings:" << endl;
+		cout << "Switch?: " << switchingEnabled << " Current1: " << current << " Current2: " << current2 << " Temp:: " << setTemperature <<endl;
+	}
 };
 
 struct BurnTimer {
@@ -141,6 +168,7 @@ public:
 private:
 	vector<HeatingPad*> heatingPads;
 	vector<Probe*> probes;
+
 
 	DigitalOutput ledPin;
 	DigitalOutput fullCurrentPin;

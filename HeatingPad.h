@@ -107,6 +107,10 @@ public:
 		return this->tempSensor.GetTemperature();
 	}
 
+	void ReadTempManual() {
+		this->tempSensor.Read();
+	}
+	
 	bool TempOK() {
 		return this->tempOk;
 	}

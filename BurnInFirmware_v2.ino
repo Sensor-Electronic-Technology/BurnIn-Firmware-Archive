@@ -12,18 +12,15 @@
 #include <ArduinoComponents/IO/AnalogInput.h>
 #include "BurnInController.h"
 
-
-
 using namespace components;
 using namespace std;
 
 BurnInController controller;
 
+
 void setup(){
     Serial.begin(38400);
-    cout << "Starting heating pads: " << endl;
     controller.Setup();
-    //Serial.println("Starting Heating Pads: ");
 }
 
 void loop(){
@@ -32,4 +29,16 @@ void loop(){
 
 void serialEvent() {
     controller.HandleSerial();
+}
+
+void FirstTimeInit() {
+    SystemState state;
+    SystemSettings settings;
+    while (!Serial) {
+        ;
+    }
+    Serial.println("Writing Initial Values to EEPROM");
+    int addr = EEPROM_write(0, state);
+    EEPROM_write(addr, settings);
+    Serial.println("Should be done");
 }

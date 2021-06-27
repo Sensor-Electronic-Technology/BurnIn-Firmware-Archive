@@ -1,37 +1,111 @@
 #include "BurnInController.h"
 
-BurnInController::BurnInController() :Component(),ledPin(6), fullCurrentPin(2){
-	RegisterChild(this->printTimer);
-	this->printTimer.onInterval([&]() {
-		int count = 0;
-		for (auto pad : heatingPads) {
-			cout << "T" << count << ": " << pad->GetTemperature() << " ,";
-		}
-		cout << endl;
-		count = 0;
-		for (auto probe : probes) {
-			cout << "V" << count << ": " << probe->GetVoltage() << " ,";
-		}
-		cout << endl;
-		}, 250);
-}
+void(*resetFunc) (void) = 0; //declare reset function @ address 0
+
+BurnInController::BurnInController() 
+	:Component(),
+	ledPin(2), 
+	fullCurrentPin(6){	}
 
 bool BurnInController::IsRunning() {
-	return this->systemState.running || this->systemState.paused;
+	return this->systemState.IsRunning();
 }
 
 void BurnInController::Setup() {
-	for (int i = 0; i < 6; i++) {
-		Probe* probe = new Probe(i, i + 9);
-		this->probes.push_back(probe);
-		RegisterChild(probe);
+	for (int i = 0; i < 100; i++) {
+		this->realArray[i] = 0;
+		this->boolArray[i] = 0;
+		if (i < 10) {
+			this->limitArray[i] = false;
+		}
 	}
 
-	for (int i = 3; i < 6; i++) {
-		HeatingPad* pad = new HeatingPad(i + 3, i);
-		this->heatingPads.push_back(pad);
-		RegisterChild(pad);
+	Serial.println("Registered Timers");
+	Probe* temp1 = new Probe(A0, A9);
+	this->probes.push_back(temp1);
+	RegisterChild(temp1);
+
+	Probe* temp2 = new Probe(A1, A10);
+	this->probes.push_back(temp2);
+	RegisterChild(temp2);
+
+	Probe* temp3 = new Probe(A2, A11);
+	this->probes.push_back(temp3);
+	RegisterChild(temp3);
+
+	Probe* temp4 = new Probe(A3, A12);
+	this->probes.push_back(temp4);
+	RegisterChild(temp4);
+
+	Probe* temp5 = new Probe(A4, A13);
+	this->probes.push_back(temp5);
+	RegisterChild(temp5);
+
+	Probe* temp6 = new Probe(A5, A14);
+	this->probes.push_back(temp6);
+	RegisterChild(temp6);
+
+	Serial.println("Registered Probes");
+
+	HeatingPad* pad1 = new HeatingPad(A6, 3);
+	this->heatingPads.push_back(pad1);
+	RegisterChild(pad1);
+
+	HeatingPad* pad2 = new HeatingPad(A7, 4);
+	this->heatingPads.push_back(pad2);
+	RegisterChild(pad2);
+
+	HeatingPad* pad3 = new HeatingPad(A8, 5);
+	this->heatingPads.push_back(pad3);
+	RegisterChild(pad3);
+
+	Serial.println("Registered HeatingPads");
+	Serial.println("Reading Setting From memory");
+	this->LoadFromMemory();
+	this->systemState.Print();
+	this->settings.Print();
+
+	Serial.println("Taking initial measurments, please wait..");
+
+	for (int i = 0; i < 100; i++) {
+		for (auto pad : heatingPads) {
+			pad->ReadTempManual();
+		}
+
+		for (auto probe : probes) {
+			probe->ReadVoltage();
+			probe->ReadCurrent();
+		}
 	}
+
+	Serial.println("Measurements Complete,setting up timers");
+
+
+	//analogReference(EXTERNAL);
+	this->updateTimer.onInterval([&]() {
+		this->UpdateData();
+		}, 100);
+
+	this->printTimer.onInterval([&]() {
+		String buffer = "";
+		for (int x = 0; x < 18; x++) {
+			String val = "";
+			if (x < 12) {
+				val = String(realArray[x]);
+			} else {
+				val = String(realArray[x] * 1000);
+			}
+			buffer += "[R" + (String)x + "]{" + val + "}";
+		}
+		for (int x = 0; x <= 4; x++) {
+			buffer += "[B" + (String)x + "]{" + (String)boolArray[x] + "}";
+		}
+		Serial.println(buffer);
+		}, 400);
+	RegisterChild(this->printTimer);
+	RegisterChild(this->updateTimer);
+	Serial.println("Timer setup complete.");
+	Serial.println("Starting Program");
 }
 
 int BurnInController::WriteToMemory(int index,void* data) {
@@ -41,6 +115,9 @@ int BurnInController::WriteToMemory(int index,void* data) {
 void BurnInController::LoadFromMemory() {
 	this->settingsAddr = EEPROM_read(0, this->systemState);
 	EEPROM_read(this->settingsAddr, this->settings);
+	for (auto pad : heatingPads) {
+		pad->ChangeSetpoint(this->settings.setTemperature);
+	}
 }
 
 void CheckStart() {
@@ -48,7 +125,7 @@ void CheckStart() {
 }
 
 void BurnInController::UpdateData() {
-	this->boolArray[0] = digitalRead(LedPin) || this->systemState.paused;
+	this->boolArray[0] = this->systemState.running || this->systemState.paused;
 	boolArray[1] = digitalRead(heatPin1);
 	boolArray[2] = digitalRead(heatPin2);
 	boolArray[3] = digitalRead(heatPin3);
@@ -64,12 +141,7 @@ void BurnInController::UpdateData() {
 		realArray[i+6] = this->heatingPads[i]->GetTemperature();
 		this->systemState.tempsOk &= this->heatingPads[i]->TempOK();
 	}
-	//realArray[6] = this->heatingPads[0]->GetTemperature();
-	//realArray[7] = this->heatingPads[1]->GetTemperature();
-	//realArray[8] = this->heatingPads[2]->GetTemperature();
-	
 	realArray[10] = this->settings.setTemperature;
-	//realArray[11] = //this->settings.;
 	realArray[12] = this->probes[0]->GetCurrent();
 	realArray[13] = this->probes[1]->GetCurrent();
 	realArray[14] = this->probes[2]->GetCurrent();
@@ -112,8 +184,6 @@ void BurnInController::TurnOnOffHeat(HeaterState state) {
 		pad->SetState(state);
 	}
 }
-
-
 
 void BurnInController::StartTest() {
 	for (int c = 0; c <= 5; c++) {
@@ -174,7 +244,9 @@ void BurnInController::Reset() {
 void BurnInController::TestProbe() {
 	Serial.println(message_table[TestingProbeMsg]);
 	this->ledPin.high();
+	//digitalWrite(6, HIGH);
 	delay(1000);
+	//digitalWrite(6, LOW);
 	this->ledPin.low();
 	Serial.println(message_table[TestCompleteMsg]);
 }
@@ -251,41 +323,40 @@ void BurnInController::HandleSerial() {
 		} else if (((char)inByte1 == 'C') && (!this->systemState.IsRunning())) {
 			this->ToggleCurrent();
 		} else if (((char)inByte1 == 'U') && (!this->systemState.IsRunning())) {
-			int isEnabled = ((char)Serial.read()) - '0';  //0
-			//int aversion = ((char)Serial.read()) - '0';   //1
+			int isEnabled = ((char)Serial.read()) - '0';  //1
 			int ch = ((char)Serial.read()) - '0';         //2
 			int ct = ((char)Serial.read()) - '0';		  //3
 			int co = ((char)Serial.read()) - '0';		  //4
+
+			int ch2 = ((char)Serial.read()) - '0';         //2
+			int ct2 = ((char)Serial.read()) - '0';		  //3
+			int co2 = ((char)Serial.read()) - '0';		  //4
+
 			int tt = ((char)Serial.read()) - '0';			  //5
 			int to = ((char)Serial.read()) - '0';         //6
 			int current = (ch * 100) + (ct * 10) + co;
+			int current2 = (ch2 * 100) + (ct2 * 10) + co2;
 			int temp = (tt * 10) + (to);
 			SystemSettings newSettings;
 			newSettings.switchingEnabled = (bool)isEnabled;
+			newSettings.current = current2;
 			newSettings.current2 = current;
 			newSettings.setTemperature = temp;
-			if (this->CheckSettings()) {
+			//Serial.println("Recieved: Current: ")
+			cout << "Recieved: Switched?: " << isEnabled << " Current: " << current << " Current2: " << current2 << " Temp: " << temp << endl;
+			if (this->CheckSettings(newSettings)) {
 				this->settings = newSettings;
-				EEPROM_write(this->settingsAddr, this->settings);
+				if (this->settingsAddr != 0) {
+					EEPROM_write(this->settingsAddr, this->settings);
+				} else {
+					SystemState state;
+					this->settingsAddr = EEPROM_read(0, state);
+					EEPROM_write(this->settingsAddr, this->settings);
+				}
 				Serial.println("[T]{System settings received: Current: " + String(current) + " Temp: " + String(temp) + "}");
 			} else {
 				Serial.println(message_table[ErrorRecievedMsg]);
 			}
-
-			//this->settings.switchingEnabled = (bool)isEnabled;
-			//this->settings.current2 = current;
-			//this->settings.setTemperature = temp;
-			//
-
-			//systemSettings.switchingEnabled = (bool)isEnabled;
-			//systemSettings.current2 = current;
-			//systemSettings.temperature = temp;
-			//systemSettings.analogVersion = aversion;
-			//if (checkMemoryData(false)) {
-			//	EEPROM_write(settingsAddr, systemSettings);
-			//	Serial.println("[T]{System settings received: Current: " + String(current) + " Temp: " + String(temp) + "}");
-			//} else {
-			//	Serial.println("[T]{Error receiving one or more settings}");
 			//}
 		} else if ((char)inByte1 == 'G') {
 			//sendComs_v2();
@@ -297,16 +368,14 @@ void BurnInController::privateLoop() {
 	if (this->IsRunning()) {
 		bool done = this->burnTimer.check();
 		this->systemState.elapsed = this->burnTimer.elapsed;
-		realArray[9] = this->burnTimer.elapsed / 1000;
+		this->realArray[9] = this->burnTimer.elapsed / 1000;
 		if (done) {
 			this->ledPin.low();
-			this->ToggleHeating();
 			this->TurnOnOffHeat(HeaterState::Off);
 			this->systemState.running = false;
 			this->systemState.paused = false;
-			
-		} else {
 
+			//EEPROM_write(0, this->systemState);
 		}
 	}
 }
