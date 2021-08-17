@@ -3,6 +3,7 @@
 #include <ArduinoComponents.h>
 #include "HeatingPad.h"
 #include "Probe.h"
+#include "CurrentSwitch.h"
 #include "Util.h"
 #include <Arduino.h>
 #include <ctime>
@@ -12,60 +13,50 @@ using namespace std;
 
 
 
-#define LedPin		2
-#define heatPin1	3
-#define heatPin2	4
-#define heatPin3	5
-#define BurnTime120 (unsigned long)72000000 //20Hrs
-#define BurnTime60	BurnTime120
-#define BurnTime150 (unsigned long)25200000  //7hrs
-
 
 struct SystemState {
-
 	SystemState() {
 		this->running = false;
 		this->paused = false;
-		this->is150On =false;
+		this->isFullCurrent =false;
 		this->tempSP = 0;
 		this->setCurrent = 150;
 		this->elapsed = 0;
+		this->tempsOk=false;
 	}
 
-	bool running = false;
-	bool paused = false;
-	bool is150On  = true;
-	bool tempsOk = false;
-	int tempSP = 0;
-	int setCurrent = 150;
-	unsigned long elapsed = 0;
+	bool running;
+	bool paused;
+	bool isFullCurrent;
+	bool tempsOk;
+	int tempSP;
+	int setCurrent;
+	unsigned long elapsed;
 
 	bool IsRunning() {
 		return this->running || this->paused;
 	}
 
 	void Print() {
-		cout << "SystemState: " << endl;
-		cout << "Running: " << running << " Paused: " << paused << " Is150On: " << is150On << " tempSP: " << tempSP << " setCurrent: " << setCurrent << " Elapsed: " << elapsed << endl;
+		cout<<"[T]{"<< "Running: " << running << " Paused: " << paused << " Is150On: " << isFullCurrent << " tempSP: " << tempSP << " setCurrent: " << setCurrent << " Elapsed: " << elapsed <<"}"<< endl;
 	}
 };
 
 struct SystemSettings {
 	SystemSettings() {
-		this->switchingEnabled = false;
-		this->current = 150;
-		this->current2 = 120;
+		this->switchingEnabled = true;
+		this->current2 = 60;
+		this->setCurrent=this->current2;
 		this->setTemperature = 85;
 	}
 
 	bool switchingEnabled = false;
-	int current = 150;
-	int current2 = 120;
-	int setTemperature = 85;
+	int current2;
+	int setTemperature;
+	int setCurrent;
 
 	void Print() {
-		cout << "SystemSettings:" << endl;
-		cout << "Switch?: " << switchingEnabled << " Current1: " << current << " Current2: " << current2 << " Temp:: " << setTemperature <<endl;
+		cout<<"[T]{"<<"System Settings: "<< "Switch?: " << switchingEnabled << " Current2: " << current2 << " Temp:: " << setTemperature <<"}"<<endl;
 	}
 };
 
@@ -77,7 +68,6 @@ struct BurnTimer {
 	unsigned long pausedTime=0;
 	bool running = false;
 	bool paused = false;
-
 
 	bool check() {
 		if (this->running && !this->paused) {
@@ -159,7 +149,11 @@ public:
 	void ToggleCurrent();
 	void PauseTest();
 	void LoadFromMemory();
+	void CheckStart();
+	void SetupIO();
+	void SetupTimers();
 	void HandleSerial();
+	void sendComs();
 	void TurnOnOffHeat(HeaterState state);
 	int WriteToMemory(int index,void* data);
 	void ReadNewSettings(SystemSettings newSettings);
@@ -169,9 +163,9 @@ private:
 	vector<HeatingPad*> heatingPads;
 	vector<Probe*> probes;
 
-
-	DigitalOutput ledPin;
-	DigitalOutput fullCurrentPin;
+	CurrentSwitch currentSwitch;
+	//DigitalOutput ledPin;
+	//DigitalOutput fullCurrentPin;
 	
 	Timer printTimer;
 	Timer updateTimer;
@@ -187,6 +181,7 @@ private:
 	boolean limitArray[10];
 
 	float t1, t2, t3;
+	bool firstTimeCheck;
 
 	void privateLoop();
 };

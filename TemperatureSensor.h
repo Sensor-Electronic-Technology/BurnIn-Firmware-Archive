@@ -1,6 +1,7 @@
 #pragma once
 #include <ArduinoSTL.h>
 #include <ArduinoComponents.h>
+#include "Util.h"
 
 using namespace components;
 using namespace std; 
@@ -11,12 +12,12 @@ public:
 		RegisterChild(this->readTimer);
 		this->readTimer.onInterval([&]() {
 			this->Read();
-		}, 50);
+		}, tempReadTime);
 	}
 
 	float Read(){
 		float aValue = this->input.read();
-		this->temperature+=((aValue*500)-this->temperature)*.1;
+		this->temperature+=((aValue*tempConversion)-this->temperature)*tempfilter;
 		return this->temperature;
 	}
 

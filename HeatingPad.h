@@ -1,24 +1,10 @@
 #pragma once
+#include <ArduinoSTL.h>
 #include <ArduinoComponents.h>
+#include "Util.h"
 #include "TemperatureSensor.h"
 
 using namespace components;
-
-#define tempHLimit			100
-#define tempLLimit			0
-#define tempDeviation		10  //% error allowed
-#define tempOffset			(0)
-#define Kp					20
-#define Ki					0.1
-#define Kd					0
-#define maxDuty				100
-#define hiDuty				98
-#define lowDuty				2
-#define readDelay			5
-#define dutyTime			500
-#define outputPeriod		1000
-#define runtime				50
-#define DefaultSetPoint		85
 
 enum HeaterState {
 	On,
@@ -59,20 +45,20 @@ public:
 		}
 
 		iTerm = iTerm + err * Ki; 
-		if (iTerm > 100.0) {
-			iTerm = 100.0;
-		} else if (iTerm < 0) {
-			iTerm = 0;
+		if (iTerm > iTermMax) {
+			iTerm = iTermMax;
+		} else if (iTerm < ITermMin) {
+			iTerm = ITermMin;
 		}
 
 		pTerm = Kp * err;
-		dTerm = dTerm + ((Kd * (err - lastErr)) - dTerm) * 0.05;
+		dTerm = dTerm + ((Kd * (err - lastErr)) - dTerm) * dTermFact;
 		Duty = pTerm + iTerm + dTerm;
 
-		if (Duty > 100.0) {
-			Duty= 100.0;
-		} else if (Duty < 0.0) {
-			Duty = 0.0;
+		if (Duty > maxDuty) {
+			Duty= maxDuty;
+		} else if (Duty < minDuty) {
+			Duty = minDuty;
 		}
 
 		if (temperature > tempHLimit) {
@@ -80,11 +66,11 @@ public:
 		} else if (temperature < tempLLimit) {
 			heaterDuty = maxDuty;
 		} else if (temperature < tempHLimit) {
-			heaterDuty = (int(Duty) * maxDuty) / 100;
+			heaterDuty = (int(Duty) * maxDuty) / maxDuty;
 			if ((heaterDuty > hiDuty) || (heaterDuty > maxDuty)) {
 				heaterDuty = maxDuty;
 			} else if (heaterDuty < lowDuty) {
-				heaterDuty = 0;
+				heaterDuty = minDuty;
 			}
 		}
 	}
@@ -92,13 +78,13 @@ public:
 	void SetOuput() {
 		if (millisTime() >= (lastOutputTime + outputPeriod)) {
 			lastOutputTime = lastOutputTime + outputPeriod;
-			if (heaterDuty > 0) {
+			if (heaterDuty > minDuty) {
 				this->output.high();
 			} else {
 				this->output.low();
 			}
 		}
-		if (millisTime() >= (lastOutputTime + (outputPeriod / 100) * heaterDuty)) {
+		if (millisTime() >= (lastOutputTime + (outputPeriod / maxDuty) * heaterDuty)) {
 			this->output.low();
 		}
 	}
@@ -143,8 +129,8 @@ private:
 	Timer dutyTimer;	
 	Timer runTimer;
 
-	volatile int heaterDuty = 100;
-	volatile float Duty = 100.0;
+	volatile int heaterDuty = maxDuty;
+	volatile float Duty = maxDuty;
 	volatile float pTerm = 0.0;
 	volatile float err = 0.0;
 	volatile float iTerm = 0.0;
