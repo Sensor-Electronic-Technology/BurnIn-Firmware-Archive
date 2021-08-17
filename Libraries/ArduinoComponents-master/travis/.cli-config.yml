@@ -1,0 +1,8 @@
+proxy_type: auto
+sketchbook_path: /home/travis/Arduino
+arduino_data: /home/travis/.arduino15
+board_manager: null
+board_manager:
+  additional_urls:
+    - https://raw.githubusercontent.com/esp8266/esp8266.github.io/e17d1956b970cabc34e4005227f35e3dd788f568/stable/package_esp8266com_index.json
+    - https://dl.espressif.com/dl/package_esp32_index.json
