@@ -19,7 +19,7 @@ public:
 		tempSensor(sensorPin) {
 		
 		this->lastErr = this->err;
-		this->err = this->tempSP - this->temperature;
+		//this->err = this->tempSP - this->temperature;
 		
 		RegisterChild(this->dutyTimer);
 		RegisterChild(this->runTimer);
@@ -138,7 +138,7 @@ private:
 	volatile float lastErr = 0.0;
 
 	volatile float tempSP=0;
-	volatile float temperature=tempSP;
+	volatile float temperature=0;
 	volatile float tempSetPoint = DefaultSetPoint;
 	unsigned long lastOutputTime = 0;
 	bool tempOk = false;

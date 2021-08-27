@@ -4,7 +4,7 @@ void(*resetFunc) (void) = 0; //declare reset function @ address 0
 
 BurnInController::BurnInController() 
 	:Component(),
-	currentSwitch(true,LedPin,FullPin){
+	currentSwitch(true,CurrentMode::FullMode,LedPin,FullPin){
 		this->currentSwitch.SwitchCurrent(SwitchState::Off);
 }
 
@@ -13,7 +13,7 @@ bool BurnInController::IsRunning() {
 }
 
 void BurnInController::Setup() {
-	analogReference(EXTERNAL);
+	analogReference(DEFAULT);
 	Serial.println(message_table[FimwareInitMsg]);
 	for (int i = 0; i < 100; i++) {
 		this->realArray[i] = 0;
@@ -30,7 +30,6 @@ void BurnInController::Setup() {
 	this->settings.Print();
 	Serial.println(message_table[SettingIOMsg]);
 	this->SetupIO();
-
 
 	Serial.println(message_table[TakingMeasMsg]);
 
@@ -52,17 +51,23 @@ void BurnInController::Setup() {
 }
 
 void BurnInController::SetupTimers() {
-
 	this->updateTimer.onInterval([&]() {
 		this->UpdateData();
-	}, UPDATEPERIOD);
+	},UPDATEPERIOD);
 
 	this->printTimer.onInterval([&]() {
 		this->sendComs();
-	}, COMPERIOD);
+	},COMPERIOD);
+
+	this->saveStateTimer.onInterval([&](){
+		if(this->systemState.IsRunning()){
+			EEPROM_write(0,this->systemState);
+		}
+	},EEPROMPERIOD);
 
 	RegisterChild(this->printTimer);
 	RegisterChild(this->updateTimer);
+	RegisterChild(this->saveStateTimer);
 }
 
 void BurnInController::sendComs(){
@@ -77,27 +82,30 @@ void BurnInController::sendComs(){
 }
 
 void BurnInController::SetupIO() {
-	Probe* temp1 = new Probe(Probe1);
+/* 	this->currentSensor=new CurrentSensor(A9);
+	RegisterChild(this->currentSensor); */
+
+	Probe* temp1 = new Probe(Probe1,1018,108);
 	this->probes.push_back(temp1);
 	RegisterChild(temp1);
 
-	Probe* temp2 = new Probe(Probe2);
+	Probe* temp2 = new Probe(Probe2,1000,108);
 	this->probes.push_back(temp2);
 	RegisterChild(temp2);
 
-	Probe* temp3 = new Probe(Probe3);
+	Probe* temp3 = new Probe(Probe3,1015,106);
 	this->probes.push_back(temp3);
 	RegisterChild(temp3);
 
-	Probe* temp4 = new Probe(Probe4);
+	Probe* temp4 = new Probe(Probe4,1023,106);
 	this->probes.push_back(temp4);
 	RegisterChild(temp4);
 
-	Probe* temp5 = new Probe(Probe5);
+	Probe* temp5 = new Probe(Probe5,998,106);
 	this->probes.push_back(temp5);
 	RegisterChild(temp5);
 
-	Probe* temp6 = new Probe(Probe6);
+	Probe* temp6 = new Probe(Probe6,1005,106);
 	this->probes.push_back(temp6);
 	RegisterChild(temp6);
 
@@ -114,17 +122,22 @@ void BurnInController::SetupIO() {
 	RegisterChild(pad3);	
 }
 
-int BurnInController::WriteToMemory(int index,void* data) {
-	return EEPROM_write(index, data);
-}
-
 void BurnInController::LoadFromMemory() {
-	this->settingsAddr = EEPROM_read(0, this->systemState);
+	SystemState state;
+	this->settingsAddr = EEPROM_read(0, state);
+	if(state.IsRunning()){
+		this->systemState.Set(state);
+	}
 	EEPROM_read(this->settingsAddr, this->settings);
 	for (auto pad : heatingPads) {
 		pad->ChangeSetpoint(this->settings.setTemperature);
 	}
 	this->currentSwitch.SwitchingEnabled(this->settings.switchingEnabled);
+	if(this->systemState.isFullCurrent){
+		this->currentSwitch.SetCurrentMode(CurrentMode::FullMode);
+	}else{
+		this->currentSwitch.SetCurrentMode(CurrentMode::HalfMode);
+	}
 }
 
 void BurnInController::CheckStart() {
@@ -162,7 +175,7 @@ void BurnInController::UpdateData() {
 	boolArray[1] = digitalRead(heatPin1);
 	boolArray[2] = digitalRead(heatPin2);
 	boolArray[3] = digitalRead(heatPin3);
-  boolArray[4]=this->systemState.paused;
+  	boolArray[4]=this->systemState.paused;
 
 	realArray[0] = this->probes[0]->GetVoltage();
 	realArray[1] = this->probes[1]->GetVoltage();
@@ -184,6 +197,7 @@ void BurnInController::UpdateData() {
 	this->systemState.tempsOk = t1Okay & t2Okay & t2Okay;
 	realArray[10] = this->systemState.tempSP;
 	realArray[11]=this->systemState.setCurrent;
+	//realArray[12]=this->currentSensor->GetCurrent();
 }
 
 void BurnInController::ReadNewSettings(SystemSettings newSettings) {
@@ -229,30 +243,25 @@ void BurnInController::StartTest() {
 	for (int c = 0; c <= 5; c++) {
 		limitArray[c] = false;
 	}
-	if (this->systemState.tempsOk) {
-		if (this->settings.switchingEnabled) {
-			this->currentSwitch.SwitchingEnabled(true);
-			if (this->systemState.isFullCurrent) {
-				this->systemState.setCurrent = FullCurrent;
-				if (this->systemState.setCurrent==150) {
-					this->burnTimer.start(BurnTime150);
-				} else {
-					this->burnTimer.start(BurnTime120);
-				}		
-			} else {
-				this->systemState.setCurrent = this->settings.current2;
-				if (this->settings.current2 == 120) {
-					this->burnTimer.start(BurnTime120);
-				} else {
-					this->burnTimer.start(BurnTime60);
-				}
-			}
-		} else {
-			this->currentSwitch.SwitchingEnabled(false);
+	if (this->systemState.tempsOk=true) {
+		if (this->systemState.isFullCurrent) {
 			this->systemState.setCurrent = FullCurrent;
 			this->burnTimer.start(BurnTime150);
-			this->systemState.isFullCurrent = true;
+/* 			if (this->systemState.setCurrent==150) {
+				this->burnTimer.start(BurnTime150);
+			} else {
+				this->burnTimer.start(BurnTime120);
+			}	 */	
+		} else {
+			this->systemState.setCurrent = this->settings.current2;
+			this->burnTimer.start(BurnTime120);
+/* 			if (this->settings.current2 == 120) {
+				this->burnTimer.start(BurnTime120);
+			} else {
+				this->burnTimer.start(BurnTime60);
+			} */
 		}
+		this->burnTimer.start(BurnTime150);
 		this->systemState.elapsed = 0;
 		this->systemState.running = true;
 		this->systemState.paused = false;
@@ -276,9 +285,15 @@ void BurnInController::Reset() {
 	this->systemState.elapsed = 0;
 	this->systemState.running = false;
 	this->systemState.paused = false;
+	this->systemState.isFullCurrent=true;
+	this->systemState.setCurrent=150;
+	for(int i=0;i<100;i++){
+		this->realArray[i]=0;
+	}
 	EEPROM_write(0, this->systemState);
-	delay(ResetDelay);
-	resetFunc();
+	wdt_disable();
+	wdt_enable(WDTO_15MS);
+	while(1){;}
 }
 
 void BurnInController::TestProbe() {
@@ -311,7 +326,9 @@ void BurnInController::PauseTest() {
 
 void BurnInController::ToggleCurrent() {
 	if(this->settings.switchingEnabled){
-		if (!this->systemState.isFullCurrent) {			
+		//this->currentSwitch.SwitchingEnabled(true);
+		CurrentMode mode=this->currentSwitch.ToggleMode();
+		if(mode==CurrentMode::FullMode){
 			this->systemState.isFullCurrent = true;
 			this->systemState.setCurrent = FullCurrent;
 			if (this->systemState.setCurrent == 150) {
@@ -319,16 +336,11 @@ void BurnInController::ToggleCurrent() {
 			} else {
 				this->burnTimer.burnInTimeLength = BurnTime120;
 			}
-		} else {
+		}else{
 			this->systemState.setCurrent = settings.current2;
 			this->systemState.isFullCurrent = false;
-			if (this->systemState.setCurrent == 120) {
-				burnTimer.burnInTimeLength = BurnTime120;
-			} else {
-				burnTimer.burnInTimeLength = BurnTime60;
-			}
+			this->burnTimer.burnInTimeLength=BurnTime120;
 		}
-		this->settingsAddr = EEPROM_write(0, this->systemState);
 		Serial.println(message_table[SetCurrentToMsg] + String(this->systemState.setCurrent) + "mA");
 	}else{
 		Serial.println(message_table[NoSwitchingMsg]);
@@ -359,10 +371,6 @@ void BurnInController::HandleSerial() {
 			int ct = input.charAt(2) - '0';		  
 			int co = input.charAt(3) - '0';				
 
-//			int ch2 = input.charAt(4) - '0';         
-//			int ct2 = input.charAt(5) - '0';		 
-//			int co2 = input.charAt(6) - '0';		 
-
 			int tt = input.charAt(4) - '0';			 
 			int to = input.charAt(5) - '0';         
 
@@ -374,8 +382,11 @@ void BurnInController::HandleSerial() {
 			newSettings.current2=current;
 			newSettings.setTemperature = temp;
 			if (this->CheckSettings(newSettings)) {
-				this->settings = newSettings;
+				this->settings.Set(newSettings);
 				this->currentSwitch.SwitchingEnabled(this->settings.switchingEnabled);
+				for(auto heater:heatingPads){
+					heater->ChangeSetpoint(this->settings.setTemperature);
+				}
 				if (this->settingsAddr != 0) {
 					EEPROM_write(this->settingsAddr, this->settings);
 				} else {
@@ -402,6 +413,8 @@ void BurnInController::privateLoop() {
 			this->TurnOnOffHeat(HeaterState::Off);
 			this->systemState.running = false;
 			this->systemState.paused = false;
+			this->systemState.elapsed=0;
+			EEPROM_write(0,this->systemState);
 		}
 	}
 }

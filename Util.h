@@ -53,6 +53,7 @@ template <class T> int EEPROM_read(int addr, T& value) {
 #define UPDATEPERIOD	        50
 #define ResetDelay              250
 #define TestProbeDelay          1000
+#define EEPROMPERIOD            5000
 
 //Duty Cycle Constants
 #define tempHLimit			    90
@@ -81,11 +82,10 @@ template <class T> int EEPROM_read(int addr, T& value) {
 #define tempfilter              .1f
 
 //Probe Constants
-#define MaxVoltageR			105
-#define MaxVoltageS			68
-#define ZeroCurrent			2.5
-#define CurrentVoltage		5
-#define fWeight				.1
+#define MaxVoltageR			    105
+#define MaxVoltageS			    68
+#define CurrentVoltage		    5
+#define fWeight				    .1
 
 //Message Indexes
 #define BurnInCompleteMsg       0

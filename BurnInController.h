@@ -1,24 +1,23 @@
 #pragma once
 #include <ArduinoSTL.h>
 #include <ArduinoComponents.h>
+#include <avr/wdt.h>
 #include "HeatingPad.h"
 #include "Probe.h"
 #include "CurrentSwitch.h"
 #include "Util.h"
+#include "CurrentSensor.h";
 #include <Arduino.h>
 #include <ctime>
 
 using namespace components;
 using namespace std;
 
-
-
-
 struct SystemState {
 	SystemState() {
 		this->running = false;
 		this->paused = false;
-		this->isFullCurrent =false;
+		this->isFullCurrent =true;
 		this->tempSP = 0;
 		this->setCurrent = 150;
 		this->elapsed = 0;
@@ -33,6 +32,16 @@ struct SystemState {
 	int setCurrent;
 	unsigned long elapsed;
 
+	void Set(const SystemState& newState){
+		this->running=newState.running;
+		this->paused=newState.paused;
+		this->isFullCurrent=newState.isFullCurrent;
+		this->tempsOk=newState.tempsOk;
+		this->tempSP=newState.tempSP;
+		this->elapsed=newState.elapsed;
+		this->tempsOk=newState.tempsOk;
+	}
+	
 	bool IsRunning() {
 		return this->running || this->paused;
 	}
@@ -44,16 +53,22 @@ struct SystemState {
 
 struct SystemSettings {
 	SystemSettings() {
-		this->switchingEnabled = true;
+		this->switchingEnabled = false;
 		this->current2 = 60;
-		this->setCurrent=this->current2;
+		this->setCurrent=FullCurrent;
 		this->setTemperature = 85;
 	}
-
 	bool switchingEnabled = false;
 	int current2;
 	int setTemperature;
 	int setCurrent;
+
+	void Set(const SystemSettings& settings){
+		this->switchingEnabled=settings.switchingEnabled;
+		this->setTemperature=settings.setTemperature;
+		this->current2=settings.current2;
+		this->setCurrent=settings.setCurrent;
+	}
 
 	void Print() {
 		cout<<"[T]{"<<"System Settings: "<< "Switch?: " << switchingEnabled << " Current2: " << current2 << " Temp:: " << setTemperature <<"}"<<endl;
@@ -104,7 +119,7 @@ struct BurnTimer {
 	}
 
 	void Pause() {
-		if (!this->running && !this->paused) {
+		if (this->running && !this->paused) {
 			this->paused = true;
 			this->pausedTime = millisTime();
 		}
@@ -155,20 +170,19 @@ public:
 	void HandleSerial();
 	void sendComs();
 	void TurnOnOffHeat(HeaterState state);
-	int WriteToMemory(int index,void* data);
 	void ReadNewSettings(SystemSettings newSettings);
 	bool CheckSettings(SystemSettings newSettings);
 
 private:
 	vector<HeatingPad*> heatingPads;
 	vector<Probe*> probes;
+	CurrentSensor *currentSensor;
 
 	CurrentSwitch currentSwitch;
-	//DigitalOutput ledPin;
-	//DigitalOutput fullCurrentPin;
-	
+
 	Timer printTimer;
 	Timer updateTimer;
+	Timer saveStateTimer;
 
 	SystemSettings settings;
 	SystemState systemState;
