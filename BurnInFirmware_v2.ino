@@ -11,8 +11,8 @@ BurnInController controller;
 
 void setup(){
     Serial.begin(38400);
-    controller.Setup();
-    //FirstTimeInit();
+    //controller.Setup();
+    FirstTimeInit();
 }
 
 void loop(){
