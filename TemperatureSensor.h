@@ -16,7 +16,7 @@ public:
 	}
 
 	float Read(){
-		float aValue = this->input.read()/1023;
+		float aValue = this->input.read();
 		this->temperature+=((aValue*tempConversion)-this->temperature)*tempfilter;
 		return this->temperature;
 	}

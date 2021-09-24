@@ -85,7 +85,7 @@ template <class T> int EEPROM_read(int addr, T& value) {
 #define tempfilter              .1f
 
 //Probe Constants
-#define MaxVoltage              108
+#define MaxVoltage              105
 #define MinVoltage              0
 #define fWeight				    .1
 #define MaxCurrent              200
