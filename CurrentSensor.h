@@ -13,7 +13,7 @@ public:
 
 	void ReadCurrent() {
 		int value=this->currentIn.read();
-		value=map(value,0,1023,0,200);
+		value=map(value,MinADC,MaxADC,MinCurrent,MaxCurrent);
 		this->current+=(((float)value)-this->current)*fWeight;
 		//this->current += ((this->currentIn.read() * CurrentVoltage) - this->current) * fWeight;
 	}

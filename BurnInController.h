@@ -6,7 +6,7 @@
 #include "Probe.h"
 #include "CurrentSwitch.h"
 #include "Util.h"
-#include "CurrentSensor.h";
+#include "CurrentSensor.h"
 #include <Arduino.h>
 #include <ctime>
 
@@ -176,7 +176,6 @@ public:
 private:
 	vector<HeatingPad*> heatingPads;
 	vector<Probe*> probes;
-	CurrentSensor *currentSensor;
 
 	CurrentSwitch currentSwitch;
 

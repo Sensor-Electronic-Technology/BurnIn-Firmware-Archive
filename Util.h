@@ -49,7 +49,7 @@ template <class T> int EEPROM_read(int addr, T& value) {
 #define BurnTime120 	        (unsigned long)72000000 //20Hrs
 #define BurnTime60		        BurnTime120
 #define BurnTime150 	        (unsigned long)25200000  //7hrs
-#define COMPERIOD		        200
+#define COMPERIOD		        100
 #define UPDATEPERIOD	        50
 #define ResetDelay              250
 #define TestProbeDelay          1000
@@ -76,16 +76,20 @@ template <class T> int EEPROM_read(int addr, T& value) {
 #define ITermMin                0.0f
 #define dTermFact               0.05f
 
+#define MaxADC                  1023
+#define MinADC                  0
+
 //Temp Sensor Constants
 #define tempReadTime            50
 #define tempConversion          500
 #define tempfilter              .1f
 
 //Probe Constants
-#define MaxVoltageR			    105
-#define MaxVoltageS			    68
-#define CurrentVoltage		    5
+#define MaxVoltage              108
+#define MinVoltage              0
 #define fWeight				    .1
+#define MaxCurrent              200
+#define MinCurrent              0
 
 //Message Indexes
 #define BurnInCompleteMsg       0

@@ -82,30 +82,27 @@ void BurnInController::sendComs(){
 }
 
 void BurnInController::SetupIO() {
-/* 	this->currentSensor=new CurrentSensor(A9);
-	RegisterChild(this->currentSensor); */
-
-	Probe* temp1 = new Probe(Probe1,1018,108);
+	Probe* temp1 = new Probe(Probe1);
 	this->probes.push_back(temp1);
 	RegisterChild(temp1);
 
-	Probe* temp2 = new Probe(Probe2,1000,108);
+	Probe* temp2 = new Probe(Probe2);
 	this->probes.push_back(temp2);
 	RegisterChild(temp2);
 
-	Probe* temp3 = new Probe(Probe3,1015,106);
+	Probe* temp3 = new Probe(Probe3);
 	this->probes.push_back(temp3);
 	RegisterChild(temp3);
 
-	Probe* temp4 = new Probe(Probe4,1023,106);
+	Probe* temp4 = new Probe(Probe4);
 	this->probes.push_back(temp4);
 	RegisterChild(temp4);
 
-	Probe* temp5 = new Probe(Probe5,998,106);
+	Probe* temp5 = new Probe(Probe5);
 	this->probes.push_back(temp5);
 	RegisterChild(temp5);
 
-	Probe* temp6 = new Probe(Probe6,1005,106);
+	Probe* temp6 = new Probe(Probe6);
 	this->probes.push_back(temp6);
 	RegisterChild(temp6);
 
@@ -197,7 +194,6 @@ void BurnInController::UpdateData() {
 	this->systemState.tempsOk = t1Okay & t2Okay & t2Okay;
 	realArray[10] = this->systemState.tempSP;
 	realArray[11]=this->systemState.setCurrent;
-	//realArray[12]=this->currentSensor->GetCurrent();
 }
 
 void BurnInController::ReadNewSettings(SystemSettings newSettings) {
@@ -243,23 +239,13 @@ void BurnInController::StartTest() {
 	for (int c = 0; c <= 5; c++) {
 		limitArray[c] = false;
 	}
-	if (this->systemState.tempsOk=true) {
+	if (this->systemState.tempsOk) {
 		if (this->systemState.isFullCurrent) {
 			this->systemState.setCurrent = FullCurrent;
 			this->burnTimer.start(BurnTime150);
-/* 			if (this->systemState.setCurrent==150) {
-				this->burnTimer.start(BurnTime150);
-			} else {
-				this->burnTimer.start(BurnTime120);
-			}	 */	
 		} else {
 			this->systemState.setCurrent = this->settings.current2;
 			this->burnTimer.start(BurnTime120);
-/* 			if (this->settings.current2 == 120) {
-				this->burnTimer.start(BurnTime120);
-			} else {
-				this->burnTimer.start(BurnTime60);
-			} */
 		}
 		this->burnTimer.start(BurnTime150);
 		this->systemState.elapsed = 0;
@@ -418,4 +404,3 @@ void BurnInController::privateLoop() {
 		}
 	}
 }
-

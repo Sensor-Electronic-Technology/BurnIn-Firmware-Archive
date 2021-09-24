@@ -6,17 +6,15 @@
 class Probe:public Component{
 public:
 
-	Probe(PinNumber voltagePin,int maxSense,int maxV):Component(),voltageIn(voltagePin) {
+	Probe(PinNumber voltagePin):Component(),voltageIn(voltagePin) {
  	  RegisterChild(this->readTimer);
 		this->voltage=0.0;
 		this->current=0.0;
-		this->maxSensor=maxSense;
-		this->maxVolts=maxV;
 	} 
 
 	void ReadVoltage() {
 		int value=this->voltageIn.read();
-		value=map(value,0,maxSensor,0,maxVolts);
+		value=map(value,MinADC,MaxADC,MinVoltage,MaxVoltage);
 		this->voltage += (((float)value) - this->voltage) * fWeight;
 		//this->voltage += ((this->voltageIn.read() * MaxVoltageR) - this->voltage) * fWeight;
 	}
@@ -31,8 +29,6 @@ private:
 	Timer readTimer;
 	float voltage;
 	float current;
-	int maxSensor=1023;
-	int maxVolts=108;
 
 	void privateLoop() {
 		this->ReadVoltage();
