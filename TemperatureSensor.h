@@ -8,7 +8,7 @@ using namespace std;
 
 class TemperatureSensor:public Component{
 public:
-	TemperatureSensor(PinNumber pin) :Component(),input(pin) {
+	TemperatureSensor(PinNumber pin) :Component(),input(pin),temperature(0) {
 //		RegisterChild(this->readTimer);
 /* 		this->readTimer.onInterval([&]() {
 			this->Read();
@@ -17,7 +17,7 @@ public:
 
 	float Read(){
 		float aValue = this->input.read();
-		this->temperature+=((aValue*tempConversion)-this->temperature)*tempfilter;
+		this->temperature+=(((aValue*tempConversion)/MaxADC)-this->temperature)*tempfilter;
 		return this->temperature;
 	}
 
@@ -28,7 +28,7 @@ public:
 private:
 	AnalogInput input;
 	Timer readTimer;
-	float temperature;
+	float temperature=0;
 
 	void privateLoop() {
 		this->Read();

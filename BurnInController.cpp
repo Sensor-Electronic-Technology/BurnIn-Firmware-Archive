@@ -34,11 +34,17 @@ void BurnInController::Setup() {
 	Serial.println(message_table[TakingMeasMsg]);
 
 	for (int i = 0; i < 100; i++) {
+		//Initialize Temperature Readings
 		for (auto pad : heatingPads) {
 			pad->ReadTempManual();
 		}
+		//Initialize Voltage Readings
 		for (auto probe : probes) {
 			probe->ReadVoltage();
+		}
+		//Initialize Current Readings
+		for(auto cSensor:currentSensors){
+			cSensor->ReadCurrent();
 		}
 	}
 
@@ -72,7 +78,7 @@ void BurnInController::SetupTimers() {
 
 void BurnInController::sendComs(){
 	String buffer = "";
-	for (int x = 0; x < 12; x++) {
+	for (int x = 0; x < 18; x++) {
 		buffer += "[R" + String(x) + "]{" + String(realArray[x]) + "}";
 	}
 	for (int x = 0; x <= 4; x++) {
@@ -105,6 +111,30 @@ void BurnInController::SetupIO() {
 	Probe* temp6 = new Probe(Probe6);
 	this->probes.push_back(temp6);
 	RegisterChild(temp6);
+
+	CurrentSensor* sensor1=new CurrentSensor(Current1);
+	this->currentSensors.push_back(sensor1);
+	RegisterChild(sensor1);
+
+	CurrentSensor* sensor2=new CurrentSensor(Current2);
+	this->currentSensors.push_back(sensor2);
+	RegisterChild(sensor2);
+
+	CurrentSensor* sensor3=new CurrentSensor(Current3);
+	this->currentSensors.push_back(sensor3);
+	RegisterChild(sensor3);
+
+	CurrentSensor* sensor4=new CurrentSensor(Current4);
+	this->currentSensors.push_back(sensor4);
+	RegisterChild(sensor4);
+
+	CurrentSensor* sensor5=new CurrentSensor(Current5);
+	this->currentSensors.push_back(sensor5);
+	RegisterChild(sensor5);
+
+	CurrentSensor* sensor6=new CurrentSensor(Current6);
+	this->currentSensors.push_back(sensor6);
+	RegisterChild(sensor6);
 
 	HeatingPad* pad1 = new HeatingPad(TempPin1, heatPin1);
 	this->heatingPads.push_back(pad1);
@@ -180,6 +210,15 @@ void BurnInController::UpdateData() {
 	realArray[3] = this->probes[3]->GetVoltage();
 	realArray[4] = this->probes[4]->GetVoltage();
 	realArray[5] = this->probes[5]->GetVoltage();
+
+	realArray[12]=this->currentSensors[0]->GetCurrent();
+	realArray[13]=this->currentSensors[1]->GetCurrent();
+	realArray[14]=this->currentSensors[2]->GetCurrent();
+	realArray[15]=this->currentSensors[3]->GetCurrent();
+	realArray[16]=this->currentSensors[4]->GetCurrent();
+	realArray[17]=this->currentSensors[5]->GetCurrent();
+
+
 	bool t1Okay,t2Okay,t3Okay;
 
 	realArray[6]=this->heatingPads[0]->GetTemperature();

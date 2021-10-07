@@ -176,6 +176,7 @@ public:
 private:
 	vector<HeatingPad*> heatingPads;
 	vector<Probe*> probes;
+	vector<CurrentSensor*> currentSensors;
 
 	CurrentSwitch currentSwitch;
 

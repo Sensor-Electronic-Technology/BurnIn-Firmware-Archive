@@ -21,29 +21,37 @@ template <class T> int EEPROM_read(int addr, T& value) {
     return newAddr;
 }//End read any value/type
 
-#define FullCurrent     150
+#define FullCurrent             150
 
 //LED Control
-#define LedPin			2
-#define FullPin			6
+#define LedPin			        2
+#define FullPin			        6
 
 //Heaters
-#define heatPin1		3
-#define heatPin2		4
-#define heatPin3		5
+#define heatPin1		        3
+#define heatPin2		        4
+#define heatPin3		        5
 
 //Probes
-#define Probe1			A0
-#define Probe2			A1
-#define Probe3			A2
-#define Probe4			A3
-#define Probe5			A4
-#define Probe6			A5
+#define Probe1			        A0
+#define Probe2			        A1
+#define Probe3			        A2
+#define Probe4			        A3
+#define Probe5			        A4
+#define Probe6			        A5
+
+#define Current1                A9
+#define Current2                A10
+#define Current3                A11
+#define Current4                A12
+#define Current5                A13
+#define Current6                A14
+
 
 //Temp Sensors
-#define TempPin1		A6
-#define TempPin2		A7
-#define TempPin3		A8
+#define TempPin1		        A6
+#define TempPin2		        A7
+#define TempPin3		        A8
 
 //Time Constants
 #define BurnTime120 	        (unsigned long)72000000 //20Hrs
@@ -85,10 +93,10 @@ template <class T> int EEPROM_read(int addr, T& value) {
 #define tempfilter              .1f
 
 //Probe Constants
-#define MaxVoltage              105
+#define MaxVoltage              108
 #define MinVoltage              0
 #define fWeight				    .1
-#define MaxCurrent              200
+#define MaxCurrent              250
 #define MinCurrent              0
 
 //Message Indexes

@@ -1,7 +1,9 @@
 {
     "configuration": "cpu=atmega2560",
     "board": "arduino:avr:mega",
-    "port": "COM8",
+    "port": "COM12",
+    "output": "../build",
     "sketch": "BurnInFirmware_v2.ino",
-    "programmer": "arduino:avrispmkii"
+    "programmer": "arduino:avrispmkii",
+    "intelliSenseGen": "global"
 }

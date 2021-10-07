@@ -16,7 +16,6 @@ public:
 		int value=this->voltageIn.read();
 		value=map(value,MinADC,MaxADC,MinVoltage,MaxVoltage);
 		this->voltage += (((float)value) - this->voltage) * fWeight;
-		//this->voltage += ((this->voltageIn.read() * MaxVoltageR) - this->voltage) * fWeight;
 	}
 
 	float GetVoltage() {
