@@ -67,7 +67,7 @@ void BurnInController::SetupTimers() {
 
 	this->saveStateTimer.onInterval([&](){
 		if(this->systemState.IsRunning()){
-			EEPROM_write(0,this->systemState);
+			EEPROM_write(StartAddr,this->systemState);
 		}
 	},EEPROMPERIOD);
 
@@ -151,7 +151,7 @@ void BurnInController::SetupIO() {
 
 void BurnInController::LoadFromMemory() {
 	SystemState state;
-	this->settingsAddr = EEPROM_read(0, state);
+	this->settingsAddr = EEPROM_read(StartAddr, state);
 	if(state.IsRunning()){
 		this->systemState.Set(state);
 	}
@@ -278,7 +278,7 @@ void BurnInController::StartTest() {
 	for (int c = 0; c <= 5; c++) {
 		limitArray[c] = false;
 	}
-	if (this->systemState.tempsOk) {
+	if (this->systemState.tempsOk=true) {
 		if (this->systemState.isFullCurrent) {
 			this->systemState.setCurrent = FullCurrent;
 			this->burnTimer.start(BurnTime150);
@@ -290,7 +290,7 @@ void BurnInController::StartTest() {
 		this->systemState.elapsed = 0;
 		this->systemState.running = true;
 		this->systemState.paused = false;
-		this->settingsAddr = EEPROM_write(0, this->systemState);
+		this->settingsAddr = EEPROM_write(StartAddr, this->systemState);
 		this->currentSwitch.SwitchCurrent(SwitchState::On);
 
 		unsigned long timeLeft = this->burnTimer.burnInTimeLength / 1000;
@@ -315,7 +315,7 @@ void BurnInController::Reset() {
 	for(int i=0;i<100;i++){
 		this->realArray[i]=0;
 	}
-	EEPROM_write(0, this->systemState);
+	EEPROM_write(StartAddr, this->systemState);
 	wdt_disable();
 	wdt_enable(WDTO_15MS);
 	while(1){;}
@@ -333,14 +333,14 @@ void BurnInController::PauseTest() {
 	if (!this->systemState.paused) {
 		this->burnTimer.Pause();
 		this->systemState.paused = true;
-		this->settingsAddr = EEPROM_write(0, this->systemState);
+		this->settingsAddr = EEPROM_write(StartAddr, this->systemState);
 		Serial.println(message_table[TestPausedMsg]);
 		this->currentSwitch.SwitchCurrent(SwitchState::Off);
 	} else {
 		this->burnTimer.Continue();
 		this->systemState.elapsed = this->burnTimer.elapsed;
 		this->systemState.paused = false;
-		this->settingsAddr = EEPROM_write(0, this->systemState);
+		this->settingsAddr = EEPROM_write(StartAddr, this->systemState);
 		Serial.println(message_table[TestResumedMsg]);
 		this->currentSwitch.SwitchCurrent(SwitchState::On);
 		for (int c = 0; c <= 5; c++) {
@@ -416,7 +416,7 @@ void BurnInController::HandleSerial() {
 					EEPROM_write(this->settingsAddr, this->settings);
 				} else {
 					SystemState state;
-					this->settingsAddr = EEPROM_read(0, state);
+					this->settingsAddr = EEPROM_read(StartAddr, state);
 					EEPROM_write(this->settingsAddr, this->settings);
 				}
 				Serial.println(message_table[SystemSettingsRecMsg]);
@@ -439,7 +439,7 @@ void BurnInController::privateLoop() {
 			this->systemState.running = false;
 			this->systemState.paused = false;
 			this->systemState.elapsed=0;
-			EEPROM_write(0,this->systemState);
+			EEPROM_write(StartAddr,this->systemState);
 		}
 	}
 }

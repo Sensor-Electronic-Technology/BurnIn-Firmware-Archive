@@ -22,6 +22,7 @@ template <class T> int EEPROM_read(int addr, T& value) {
 }//End read any value/type
 
 #define FullCurrent             150
+#define StartAddr               255
 
 //LED Control
 #define LedPin			        2

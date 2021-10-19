@@ -28,7 +28,7 @@ void FirstTimeInit() {
     SystemSettings settings;
     while (!Serial) {;}
     Serial.println("Writing Initial Values to EEPROM");
-    int addr = EEPROM_write(0, state);
+    int addr = EEPROM_write(StartAddr, state);
     EEPROM_write(addr, settings);
     Serial.println("Should be done");
 }
