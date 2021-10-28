@@ -2,10 +2,9 @@
 
 void(*resetFunc) (void) = 0; //declare reset function @ address 0
 
-BurnInController::BurnInController() 
-	:Component(),
-	currentSwitch(true,CurrentMode::FullMode,LedPin,FullPin){
-		this->currentSwitch.SwitchCurrent(SwitchState::Off);
+BurnInController::BurnInController()
+	:Component(),currentSelector(CurrentPin,Pin120mA,Pin60mA){
+		this->currentSelector.SetCurrent(CurrentValue::c150);
 }
 
 bool BurnInController::IsRunning() {
@@ -159,12 +158,15 @@ void BurnInController::LoadFromMemory() {
 	for (auto pad : heatingPads) {
 		pad->ChangeSetpoint(this->settings.setTemperature);
 	}
-	this->currentSwitch.SwitchingEnabled(this->settings.switchingEnabled);
+
+	this->currentSelector.SetCurrent(this->settings.setCurrent);
+
+/* 	this->currentSwitch.SwitchingEnabled(this->settings.switchingEnabled);
 	if(this->systemState.isFullCurrent){
 		this->currentSwitch.SetCurrentMode(CurrentMode::FullMode);
 	}else{
 		this->currentSwitch.SetCurrentMode(CurrentMode::HalfMode);
-	}
+	} */
 }
 
 void BurnInController::CheckStart() {
@@ -174,25 +176,33 @@ void BurnInController::CheckStart() {
 		}
 		this->systemState.running = true;
 		this->systemState.paused = false;
-		this->TurnOnOffHeat(HeaterState::On);
-		if (this->systemState.isFullCurrent) {
-			this->burnTimer.burnInTimeLength = BurnTime150;
-			this->systemState.setCurrent = FullCurrent;
-		} else {
-			this->burnTimer.burnInTimeLength = BurnTime120;
-			this->systemState.setCurrent = this->settings.current2;
+ 		this->TurnOnOffHeat(HeaterState::On);
+		switch(this->systemState.setCurrent){
+			case CurrentValue::c060:{
+				this->burnTimer.burnInTimeLength=BurnTime60;
+				break;
+			}
+			case CurrentValue::c120:{
+				this->burnTimer.burnInTimeLength=BurnTime120;
+				break;
+			}
+			case CurrentValue::c150:{
+				this->burnTimer.burnInTimeLength=BurnTime150;
+				break;
+			}
 		}
+
 		this->burnTimer.elapsed = this->systemState.elapsed;
 		this->burnTimer.burnInStartTime = millisTime() - this->burnTimer.elapsed;
 		this->burnTimer.running = true;
 		this->burnTimer.paused = false;
-		this->currentSwitch.SwitchCurrent(SwitchState::On);
-		
+		this->currentSelector.TurnOn();		
 		unsigned long timeLeft = (this->burnTimer.burnInTimeLength - this->burnTimer.elapsed) / 1000;
 		unsigned long hrs = timeLeft / 3600;
 		unsigned long mins = (timeLeft / 60) % 60;
 		unsigned long seconds = (timeLeft % 60);
 		String time = String(hrs) + ':' + String(mins) + ':' + String(seconds);
+
 		Serial.println("[T]{Continuing " + String(this->systemState.setCurrent) + "mA Test Now:Runtime= " + time + "}");
 	}
 }
@@ -244,10 +254,10 @@ void BurnInController::ReadNewSettings(SystemSettings newSettings) {
 	}
 }
 
-bool BurnInController::CheckSettings(SystemSettings newSettings){
+/* bool BurnInController::CheckSettings(SystemSettings newSettings){
 	return  (newSettings.current2 == 120 || newSettings.current2 == 60)
 			&& (newSettings.setTemperature <= 85);
-}
+} */
 
 void BurnInController::ToggleHeating() {
 	bool ret = false;
@@ -279,13 +289,29 @@ void BurnInController::StartTest() {
 		limitArray[c] = false;
 	}
 	if (this->systemState.tempsOk=true) {
-		if (this->systemState.isFullCurrent) {
+/* 		if (this->systemState.isFullCurrent) {
 			this->systemState.setCurrent = FullCurrent;
 			this->burnTimer.start(BurnTime150);
 		} else {
 			this->systemState.setCurrent = this->settings.current2;
 			this->burnTimer.start(BurnTime120);
+		} */
+
+		switch(this->systemState.setCurrent){
+			case CurrentValue::c060:{
+				this->burnTimer.burnInTimeLength=BurnTime60;
+				break;
+			}
+			case CurrentValue::c120:{
+				this->burnTimer.burnInTimeLength=BurnTime120;
+				break;
+			}
+			case CurrentValue::c150:{
+				this->burnTimer.burnInTimeLength=BurnTime150;
+				break;
+			}
 		}
+
 		this->burnTimer.start(BurnTime150);
 		this->systemState.elapsed = 0;
 		this->systemState.running = true;
@@ -429,12 +455,13 @@ void BurnInController::HandleSerial() {
 }
 
 void BurnInController::privateLoop() {
-	if (this->IsRunning()) {
+	if (this->IsRunning() && !this->burnTimer.paused) {
 		bool done = this->burnTimer.check();
 		this->systemState.elapsed = this->burnTimer.elapsed;
 		this->realArray[9] = this->burnTimer.elapsed / 1000;
 		if (done) {
-			this->currentSwitch.SwitchCurrent(SwitchState::Off);
+			//this->currentSwitch.SwitchCurrent(SwitchState::Off);
+			this->currentSelector.TurnOff();
 			this->TurnOnOffHeat(HeaterState::Off);
 			this->systemState.running = false;
 			this->systemState.paused = false;

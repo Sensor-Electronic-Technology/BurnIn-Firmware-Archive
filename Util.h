@@ -21,12 +21,20 @@ template <class T> int EEPROM_read(int addr, T& value) {
     return newAddr;
 }//End read any value/type
 
+enum CurrentValue:int{
+    c150=150,
+    c120=120,
+    c060=60
+};
+
 #define FullCurrent             150
 #define StartAddr               255
 
 //LED Control
-#define LedPin			        2
-#define FullPin			        6
+#define CurrentPin		        2
+#define Pin120mA		        6
+#define Pin60mA                 7
+
 
 //Heaters
 #define heatPin1		        3

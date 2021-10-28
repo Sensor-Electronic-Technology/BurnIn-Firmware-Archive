@@ -2,12 +2,12 @@
 #include <ArduinoSTL.h>
 #include <ArduinoComponents.h>
 #include <avr/wdt.h>
+#include "CurrentSelector.h"
 #include "HeatingPad.h"
 #include "Probe.h"
 #include "CurrentSwitch.h"
 #include "Util.h"
 #include "CurrentSensor.h"
-#include <Arduino.h>
 #include <ctime>
 
 using namespace components;
@@ -17,7 +17,7 @@ struct SystemState {
 	SystemState() {
 		this->running = false;
 		this->paused = false;
-		this->isFullCurrent =true;
+		this->setCurrent =CurrentValue::c150;
 		this->tempSP = 0;
 		this->setCurrent = 150;
 		this->elapsed = 0;
@@ -26,17 +26,16 @@ struct SystemState {
 
 	bool running;
 	bool paused;
-	bool isFullCurrent;
 	bool tempsOk;
 	int tempSP;
-	int setCurrent;
+	CurrentValue setCurrent;
 	unsigned long elapsed;
 
 	void Set(const SystemState& newState){
 		this->running=newState.running;
 		this->paused=newState.paused;
-		this->isFullCurrent=newState.isFullCurrent;
 		this->tempsOk=newState.tempsOk;
+		this->setCurrent=newState.setCurrent;
 		this->tempSP=newState.tempSP;
 		this->elapsed=newState.elapsed;
 		this->tempsOk=newState.tempsOk;
@@ -54,19 +53,17 @@ struct SystemState {
 struct SystemSettings {
 	SystemSettings() {
 		this->switchingEnabled = false;
-		this->current2 = 60;
-		this->setCurrent=FullCurrent;
+		this->setCurrent=CurrentValue::c150;
 		this->setTemperature = 85;
 	}
 	bool switchingEnabled = false;
-	int current2;
 	int setTemperature;
-	int setCurrent;
+	CurrentValue setCurrent;
 
 	void Set(const SystemSettings& settings){
 		this->switchingEnabled=settings.switchingEnabled;
 		this->setTemperature=settings.setTemperature;
-		this->current2=settings.current2;
+		this->setCurrent=settings.setCurrent;
 		this->setCurrent=settings.setCurrent;
 	}
 
@@ -128,7 +125,7 @@ struct BurnTimer {
 	void Continue() {
 		if (this->paused && this->running) {
 			this->paused = false;
-			this->burnInTime = millisTime();
+			this->burnInTime = millisTime()+this->pausedTime;
 			this->burnInTimeLength += (this->burnInTime - this->pausedTime);
 		}
 	}
@@ -178,8 +175,8 @@ private:
 	vector<Probe*> probes;
 	vector<CurrentSensor*> currentSensors;
 
-	CurrentSwitch currentSwitch;
-
+	//CurrentSwitch currentSwitch;
+	CurrentSelector currentSelector;
 	Timer printTimer;
 	Timer updateTimer;
 	Timer saveStateTimer;
