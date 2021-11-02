@@ -66,11 +66,16 @@ enum CurrentValue:int{
 #define BurnTime120 	        (unsigned long)72000000 //20Hrs
 #define BurnTime60		        BurnTime120
 #define BurnTime150 	        (unsigned long)25200000  //7hrs
-#define COMPERIOD		        100
+#define Time120mASecs           (unsigned long)72000
+#define Time60mASecs            Time120mASecs
+#define Time150mASecs           (unsigned long)25200
+#define TPeriod                 5
+#define TFactor                 1000
+#define COMPERIOD		        250
 #define UPDATEPERIOD	        50
 #define ResetDelay              250
 #define TestProbeDelay          1000
-#define EEPROMPERIOD            5000
+#define EEPROMPERIOD            10000
 
 //Duty Cycle Constants
 #define tempHLimit			    90
@@ -107,6 +112,7 @@ enum CurrentValue:int{
 #define fWeight				    .1
 #define MaxCurrent              250
 #define MinCurrent              0
+#define CurrentTol              6             
 
 //Message Indexes
 #define BurnInCompleteMsg       0

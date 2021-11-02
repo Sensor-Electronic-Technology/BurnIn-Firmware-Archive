@@ -19,7 +19,6 @@ struct SystemState {
 		this->paused = false;
 		this->setCurrent =CurrentValue::c150;
 		this->tempSP = 0;
-		this->setCurrent = 150;
 		this->elapsed = 0;
 		this->tempsOk=false;
 	}
@@ -46,7 +45,7 @@ struct SystemState {
 	}
 
 	void Print() {
-		cout<<"[T]{"<< "Running: " << running << " Paused: " << paused << " Is150On: " << isFullCurrent << " tempSP: " << tempSP << " setCurrent: " << setCurrent << " Elapsed: " << elapsed <<"}"<< endl;
+		cout<<"[T]{"<< "Running: " << running << " Paused: " << paused << " tempSP: " << tempSP << " setCurrent: " << setCurrent << " Elapsed: " << elapsed <<"}"<< endl;
 	}
 };
 
@@ -64,80 +63,70 @@ struct SystemSettings {
 		this->switchingEnabled=settings.switchingEnabled;
 		this->setTemperature=settings.setTemperature;
 		this->setCurrent=settings.setCurrent;
-		this->setCurrent=settings.setCurrent;
 	}
 
 	void Print() {
-		cout<<"[T]{"<<"System Settings: "<< "Switch?: " << switchingEnabled << " Current2: " << current2 << " Temp:: " << setTemperature <<"}"<<endl;
+		cout<<"[T]{"<<"System Settings: "<< "Switch?: " << switchingEnabled << " Current2: " << " Temp:: " << setTemperature <<"}"<<endl;
 	}
 };
 
 struct BurnTimer {
-	unsigned long burnInStartTime=0;
+
+	unsigned long lastCheck=0;
 	unsigned long elapsed=0;
-	unsigned long burnInTime = 0;
-	unsigned long burnInTimeLength=0;
-	unsigned long pausedTime=0;
+	unsigned long lengthSecs=0;
 	bool running = false;
 	bool paused = false;
 
 	bool check() {
-		if (this->running && !this->paused) {
-			this->burnInTime = millisTime();
-			this->elapsed = this->burnInTime - this->burnInStartTime;
-			this->running = !(this->elapsed >= this->burnInTimeLength);
+		if(this->running && !this->paused){
+			if(millisTime()-this->lastCheck>=(TPeriod*TFactor)){
+				this->lastCheck=millisTime();
+				this->elapsed+=1;
+				this->running=!((this->elapsed*TPeriod)>=this->lengthSecs);
+			}
 			return !this->running;
-		} else {
+		}else{
 			return false;
 		}
 	}
 
 	void start(unsigned long length) {
-		if (!this->running && !this->paused) {
-			this->burnInTimeLength = length;
-			this->burnInStartTime = millisTime();
-			this->pausedTime = 0;
-			this->elapsed = 0;
-			this->running = true;
-			this->paused = false;
-			this->elapsed = 0;
+		if(!this->running && !this->paused){
+			this->lengthSecs=length;
+			this->lastCheck=millisTime();
+			this->elapsed=0;
+			this->running=true;
+			this->paused=false;
 		}
 	}
 
 	void start() {
-		if (!this->running && !this->paused) {
-			this->burnInStartTime = millisTime();
-			this->pausedTime = 0;
-			this->elapsed = 0;
-			this->running = true;
-			this->paused = false;
-			this->elapsed = 0;
+		if(!this->running && !this->paused){
+			this->lastCheck=millisTime();
+			this->elapsed=0;
+			this->running=true;
+			this->paused=false;
 		}
 	}
 
 	void Pause() {
-		if (this->running && !this->paused) {
-			this->paused = true;
-			this->pausedTime = millisTime();
+		if(this->running && !this->paused){
+			this->paused=true;
 		}
 	}
 	
 	void Continue() {
-		if (this->paused && this->running) {
-			this->paused = false;
-			this->burnInTime = millisTime()+this->pausedTime;
-			this->burnInTimeLength += (this->burnInTime - this->pausedTime);
+		if(this->running && this->paused){
+			this->paused=false;
 		}
 	}
 
 	void Stop() {
-		if (this->running || this->paused) {
-			this->running = false;
-			this->paused = false;
-			this->burnInTime = 0;
-			this->elapsed = 0;
-			this->burnInStartTime = 0;
-		}
+		this->running=false;
+		this->paused=false;
+		this->lastCheck=0;
+		this->elapsed=0;
 	}
 };
 
@@ -190,6 +179,7 @@ private:
 	float realArray[100];
 	bool boolArray[100];
 	boolean limitArray[10];
+	boolean climits[6];
 
 	float t1, t2, t3;
 	bool firstTimeCheck;
