@@ -21,12 +21,20 @@ template <class T> int EEPROM_read(int addr, T& value) {
     return newAddr;
 }//End read any value/type
 
+enum CurrentValue:int{
+    c150=150,
+    c120=120,
+    c060=60
+};
+
 #define FullCurrent             150
 #define StartAddr               255
 
 //LED Control
-#define LedPin			        2
-#define FullPin			        6
+#define CurrentPin		        2
+#define Pin120mA		        6
+#define Pin60mA                 7
+
 
 //Heaters
 #define heatPin1		        3
@@ -58,11 +66,16 @@ template <class T> int EEPROM_read(int addr, T& value) {
 #define BurnTime120 	        (unsigned long)72000000 //20Hrs
 #define BurnTime60		        BurnTime120
 #define BurnTime150 	        (unsigned long)25200000  //7hrs
-#define COMPERIOD		        100
+#define Time120mASecs           (unsigned long)72000
+#define Time60mASecs            Time120mASecs
+#define Time150mASecs           (unsigned long)25200
+#define TPeriod                 5
+#define TFactor                 1000
+#define COMPERIOD		        250
 #define UPDATEPERIOD	        50
 #define ResetDelay              250
 #define TestProbeDelay          1000
-#define EEPROMPERIOD            5000
+#define EEPROMPERIOD            10000
 
 //Duty Cycle Constants
 #define tempHLimit			    90
@@ -99,6 +112,7 @@ template <class T> int EEPROM_read(int addr, T& value) {
 #define fWeight				    .1
 #define MaxCurrent              250
 #define MinCurrent              0
+#define CurrentTol              6             
 
 //Message Indexes
 #define BurnInCompleteMsg       0
