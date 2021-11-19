@@ -78,7 +78,7 @@ void BurnInController::SetupTimers() {
 
 void BurnInController::sendComs(){
 	String buffer = "";
-	for (int x = 0; x < 18; x++) {
+	for (int x = 0; x < 19; x++) {
 		buffer += "[R" + String(x) + "]{" + String(realArray[x]) + "}";
 	}
 	for (int x = 0; x <= 4; x++) {
@@ -221,7 +221,6 @@ void BurnInController::UpdateData() {
 	realArray[16]=this->currentSensors[4]->GetCurrent();
 	realArray[17]=this->currentSensors[5]->GetCurrent();
 
-
 	bool t1Okay,t2Okay,t3Okay;
 
 	realArray[6]=this->heatingPads[0]->GetTemperature();
@@ -236,6 +235,7 @@ void BurnInController::UpdateData() {
 	this->systemState.tempsOk = t1Okay & t2Okay & t2Okay;
 	realArray[10] = this->systemState.tempSP;
 	realArray[11]=this->systemState.setCurrent;
+	
 }
 
 void BurnInController::ReadNewSettings(SystemSettings newSettings) {
@@ -291,8 +291,6 @@ void BurnInController::StartTest() {
 				break;
 			}
 		}
-
-
 		this->systemState.elapsed = 0;
 		this->systemState.running = true;
 		this->systemState.paused = false;
@@ -448,6 +446,7 @@ void BurnInController::privateLoop() {
 		bool done = this->burnTimer.check();
 		this->systemState.elapsed = this->burnTimer.elapsed;			
 		this->realArray[9] = this->burnTimer.elapsed*TPeriod;
+		realArray[18]=this->burnTimer.lengthSecs;
 		if (done) {
 			this->currentSelector.TurnOff();
 			this->TurnOnOffHeat(HeaterState::Off);
