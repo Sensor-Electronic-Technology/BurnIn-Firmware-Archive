@@ -19,6 +19,10 @@ public:
         this->setCurrent=current;
     }
 
+    CurrentValue GetSetCurrent(){
+        return this->setCurrent;
+    }
+
     CurrentValue CycleCurrent(){
         switch(this->setCurrent){
             case CurrentValue::c150: {

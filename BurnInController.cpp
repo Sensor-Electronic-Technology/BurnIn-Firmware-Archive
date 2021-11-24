@@ -30,9 +30,7 @@ void BurnInController::Setup() {
 	this->settings.Print();
 	Serial.println(message_table[SettingIOMsg]);
 	this->SetupIO();
-
 	Serial.println(message_table[TakingMeasMsg]);
-
 	for (int i = 0; i < 100; i++) {
 		//Initialize Temperature Readings
 		for (auto pad : heatingPads) {
@@ -152,10 +150,14 @@ void BurnInController::SetupIO() {
 void BurnInController::LoadFromMemory() {
 	SystemState state;
 	this->settingsAddr = EEPROM_read(StartAddr, state);
-	if(state.IsRunning()){
-		this->systemState.Set(state);
-	}
 	EEPROM_read(this->settingsAddr, this->settings);
+	if(state.IsRunning()){
+		this->systemState=state;
+		this->currentSelector.SetCurrent(this->systemState.setCurrent);
+	}else{
+		this->systemState.setCurrent=this->settings.setCurrent;
+		this->currentSelector.SetCurrent(this->settings.setCurrent);		
+	}
 	for (auto pad : heatingPads) {
 		pad->ChangeSetpoint(this->settings.setTemperature);
 	}
@@ -234,9 +236,9 @@ void BurnInController::UpdateData() {
 
 	this->systemState.tempsOk = t1Okay & t2Okay & t2Okay;
 	realArray[10] = this->systemState.tempSP;
+	//realArray[11]=this->currentSelector.GetSetCurrent();
 	realArray[11]=this->systemState.setCurrent;
-	realArray[18]=this->burnTimer.lengthSecs;
-	
+	realArray[18]=float(this->burnTimer.lengthSecs);
 }
 
 void BurnInController::ReadNewSettings(SystemSettings newSettings) {
@@ -317,7 +319,7 @@ void BurnInController::Reset() {
 	this->systemState.elapsed = 0;
 	this->systemState.running = false;
 	this->systemState.paused = false;
-	this->systemState.setCurrent=CurrentValue::c150;
+	this->systemState.setCurrent=this->settings.setCurrent;
 	for(int i=0;i<100;i++){
 		this->realArray[i]=0;
 	}
@@ -362,7 +364,6 @@ void BurnInController::ToggleCurrent() {
 		switch(this->systemState.setCurrent){
 			case CurrentValue::c060:{
 				this->burnTimer.lengthSecs=Time60mASecs;
-
 				break;
 			}
 			case CurrentValue::c120:{
@@ -374,7 +375,7 @@ void BurnInController::ToggleCurrent() {
 				break;
 			}
 		}
-		EEPROM_write(StartAddr,this->systemState);
+		//EEPROM_write(StartAddr,this->systemState);
 		Serial.println(message_table[SetCurrentToMsg] + String(this->systemState.setCurrent) + "mA");
 	}else{
 		Serial.println(message_table[NoSwitchingMsg]);
@@ -386,6 +387,10 @@ bool BurnInController::CheckSettings(SystemSettings newSettings){
 	&& (newSettings.setTemperature>0 && newSettings.setTemperature<100);
 }
 
+bool BurnInController::canTestCurrent(){
+	return (this->systemState.running && this->systemState.paused) || (!this->systemState.running);
+}
+
 void BurnInController::HandleSerial() {
 	byte inByte1 = 0;
 	word buff = 0;
@@ -395,7 +400,7 @@ void BurnInController::HandleSerial() {
 			this->StartTest();
 		} else if ((char)inByte1 == 'R') {
 			this->Reset();
-		} else if (((char)inByte1 == 'T') && (!this->systemState.IsRunning())) {
+		} else if (((char)inByte1 == 'T') && (this->canTestCurrent())) {
 			this->TestProbe();
 		} else if (((char)inByte1 == 'H') && (!this->systemState.IsRunning())) {
 			this->ToggleHeating();
@@ -414,15 +419,32 @@ void BurnInController::HandleSerial() {
 			int to = input.charAt(5) - '0';         
 
 			int current = (ch * 100) + (ct * 10) + co;
-			//int current2 = (ch2 * 100) + (ct2 * 10) + co2;
 			int temp = (tt * 10) + (to);
 			SystemSettings newSettings;
 			newSettings.switchingEnabled = (bool)isEnabled;
-			newSettings.setCurrent=CurrentValue::c150;
 			newSettings.setTemperature = temp;
+			switch(current){
+				case CurrentValue::c150:{
+					newSettings.setCurrent=CurrentValue::c150;
+					break;
+				}
+				case CurrentValue::c120:{
+					newSettings.setCurrent=CurrentValue::c120;
+					break;
+				}
+				case CurrentValue::c060:{
+					newSettings.setCurrent=CurrentValue::c060;
+					break;
+				}
+				default:{
+					newSettings.setCurrent=CurrentValue::c150;
+					break;
+				}
+			}
 			if (this->CheckSettings(newSettings)) {
-				this->settings.Set(newSettings);
-
+				this->settings=newSettings;
+				this->currentSelector.SetCurrent(this->settings.setCurrent);
+				this->systemState.setCurrent=this->settings.setCurrent;
 				for(auto heater:heatingPads){
 					heater->ChangeSetpoint(this->settings.setTemperature);
 				}
@@ -447,7 +469,6 @@ void BurnInController::privateLoop() {
 		bool done = this->burnTimer.check();
 		this->systemState.elapsed = this->burnTimer.elapsed;			
 		this->realArray[9] = this->burnTimer.elapsed*TPeriod;
-		realArray[18]=this->burnTimer.lengthSecs;
 		if (done) {
 			this->currentSelector.TurnOff();
 			this->TurnOnOffHeat(HeaterState::Off);

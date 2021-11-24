@@ -16,23 +16,23 @@
             ],
             "intelliSenseMode": "gcc-x64",
             "includePath": [
-                "C:\\Users\\aelmendo\\AppData\\Local\\Arduino15\\packages\\arduino\\hardware\\avr\\1.8.2\\cores\\arduino",
-                "C:\\Users\\aelmendo\\AppData\\Local\\Arduino15\\packages\\arduino\\hardware\\avr\\1.8.2\\variants\\mega",
+                "C:\\Users\\aelmendo\\AppData\\Local\\arduino15\\packages\\arduino\\hardware\\avr\\1.8.2\\cores\\arduino",
+                "C:\\Users\\aelmendo\\AppData\\Local\\arduino15\\packages\\arduino\\hardware\\avr\\1.8.2\\variants\\mega",
                 "C:\\Users\\aelmendo\\Documents\\Arduino\\libraries\\ArduinoSTL\\src",
-                "C:\\Users\\aelmendo\\Documents\\Arduino\\libraries\\ArduinoComponents-master\\src",
-                "C:\\Users\\aelmendo\\AppData\\Local\\Arduino15\\packages\\arduino\\hardware\\avr\\1.8.2\\libraries\\EEPROM\\src",
+                "C:\\Users\\aelmendo\\Documents\\Arduino\\libraries\\ArduinoComponents\\src",
+                "C:\\Users\\aelmendo\\AppData\\Local\\arduino15\\packages\\arduino\\hardware\\avr\\1.8.2\\libraries\\EEPROM\\src",
                 "c:\\users\\aelmendo\\appdata\\local\\arduino15\\packages\\arduino\\tools\\avr-gcc\\7.3.0-atmel3.6.1-arduino5\\lib\\gcc\\avr\\7.3.0\\include",
                 "c:\\users\\aelmendo\\appdata\\local\\arduino15\\packages\\arduino\\tools\\avr-gcc\\7.3.0-atmel3.6.1-arduino5\\lib\\gcc\\avr\\7.3.0\\include-fixed",
                 "c:\\users\\aelmendo\\appdata\\local\\arduino15\\packages\\arduino\\tools\\avr-gcc\\7.3.0-atmel3.6.1-arduino5\\avr\\include"
             ],
             "forcedInclude": [
-                "C:\\Users\\aelmendo\\AppData\\Local\\Arduino15\\packages\\arduino\\hardware\\avr\\1.8.2\\cores\\arduino\\Arduino.h"
+                "C:\\Users\\aelmendo\\AppData\\Local\\arduino15\\packages\\arduino\\hardware\\avr\\1.8.2\\cores\\arduino\\Arduino.h"
             ],
             "cStandard": "c11",
             "cppStandard": "c++11",
             "defines": [
                 "F_CPU=16000000L",
-                "ARDUINO=10812",
+                "ARDUINO=10816",
                 "ARDUINO_AVR_MEGA2560",
                 "ARDUINO_ARCH_AVR",
                 "__DBL_MIN_EXP__=(-125)",

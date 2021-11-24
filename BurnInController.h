@@ -30,14 +30,22 @@ struct SystemState {
 	CurrentValue setCurrent;
 	unsigned long elapsed;
 
-	void Set(const SystemState& newState){
-		this->running=newState.running;
-		this->paused=newState.paused;
-		this->tempsOk=newState.tempsOk;
-		this->setCurrent=newState.setCurrent;
-		this->tempSP=newState.tempSP;
-		this->elapsed=newState.elapsed;
-		this->tempsOk=newState.tempsOk;
+	SystemState(const SystemState& other){
+		this->running=other.running;
+		this->paused=other.paused;
+		this->tempsOk=other.tempsOk;
+		this->setCurrent=other.setCurrent;
+		this->tempSP=other.tempSP;
+		this->elapsed=other.elapsed;
+	}
+
+	SystemState& operator=(const SystemState& rhs){
+		this->running=rhs.running;
+		this->paused=rhs.paused;
+		this->tempsOk=rhs.tempsOk;
+		this->setCurrent=rhs.setCurrent;
+		this->tempSP=rhs.tempSP;
+		this->elapsed=rhs.elapsed;
 	}
 	
 	bool IsRunning() {
@@ -59,14 +67,14 @@ struct SystemSettings {
 	int setTemperature;
 	CurrentValue setCurrent;
 
-	void Set(const SystemSettings& settings){
-		this->switchingEnabled=settings.switchingEnabled;
-		this->setTemperature=settings.setTemperature;
-		this->setCurrent=settings.setCurrent;
+	SystemSettings& operator=(const SystemSettings& other){
+		this->switchingEnabled=other.switchingEnabled;
+		this->setTemperature=other.setTemperature;
+		this->setCurrent=other.setCurrent;
 	}
 
 	void Print() {
-		cout<<"[T]{"<<"System Settings: "<< "Switch?: " << switchingEnabled << " Current2: " << " Temp:: " << setTemperature <<"}"<<endl;
+		cout<<"[T]{"<<"System Settings: "<< "Switch?: " << switchingEnabled << " Default Current: "<<int(setCurrent)<< " Temp:: " << setTemperature <<"}"<<endl;
 	}
 };
 
@@ -74,7 +82,7 @@ struct BurnTimer {
 
 	unsigned long lastCheck=0;
 	unsigned long elapsed=0;
-	unsigned long lengthSecs=0;
+	long lengthSecs=0;
 	bool running = false;
 	bool paused = false;
 
@@ -155,6 +163,7 @@ public:
 	void SetupTimers();
 	void HandleSerial();
 	void sendComs();
+	bool canTestCurrent();
 	void TurnOnOffHeat(HeaterState state);
 	void ReadNewSettings(SystemSettings newSettings);
 	bool CheckSettings(SystemSettings newSettings);

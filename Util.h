@@ -68,8 +68,8 @@ enum CurrentValue:int{
 #define BurnTime150 	        (unsigned long)25200000  //7hrs
 #define Time120mASecs           (unsigned long)72000
 #define Time60mASecs            Time120mASecs
-//#define Time150mASecs           (unsigned long)25200
-#define Time150mASecs           (unsigned long)60
+#define Time150mASecs           (unsigned long)25200
+//#define Time150mASecs           (unsigned long)30
 #define TPeriod                 5
 #define TFactor                 1000
 #define COMPERIOD		        250
