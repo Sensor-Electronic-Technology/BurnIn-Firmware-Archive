@@ -235,6 +235,7 @@ void BurnInController::UpdateData() {
 	this->systemState.tempsOk = t1Okay & t2Okay & t2Okay;
 	realArray[10] = this->systemState.tempSP;
 	realArray[11]=this->systemState.setCurrent;
+	realArray[18]=this->burnTimer.lengthSecs;
 	
 }
 
