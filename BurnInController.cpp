@@ -294,8 +294,6 @@ void BurnInController::StartTest() {
 				break;
 			}
 		}
-
-		this-> 
 		this->systemState.elapsed = 0;
 		this->systemState.running = true;
 		this->systemState.paused = false;
