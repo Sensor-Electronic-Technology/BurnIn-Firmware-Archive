@@ -279,7 +279,7 @@ void BurnInController::StartTest() {
 	for (int c = 0; c <= 5; c++) {
 		limitArray[c] = false;
 	}
-	if (this->systemState.tempsOk) {
+	if (this->systemState.tempsOk=1) {
 		switch(this->systemState.setCurrent){
 			case CurrentValue::c060:{
 				this->burnTimer.lengthSecs=Time60mASecs;
@@ -471,7 +471,7 @@ void BurnInController::privateLoop() {
 		this->realArray[9] = this->burnTimer.elapsed*TPeriod;
 		if (done) {
 			this->currentSelector.TurnOff();
-			this->TurnOnOffHeat(HeaterState::Off);
+			//this->TurnOnOffHeat(HeaterState::Off);
 			this->systemState.running = false;
 			this->systemState.paused = false;
 			this->systemState.elapsed=0;

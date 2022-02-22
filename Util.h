@@ -75,7 +75,7 @@ enum CurrentValue:int{
 #define COMPERIOD		        250
 #define UPDATEPERIOD	        50
 #define ResetDelay              250
-#define TestProbeDelay          1000
+#define TestProbeDelay          2000
 #define EEPROMPERIOD            10000
 
 //Duty Cycle Constants

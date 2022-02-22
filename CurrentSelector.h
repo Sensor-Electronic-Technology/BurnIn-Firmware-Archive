@@ -67,8 +67,8 @@ public:
 
     void TurnOff(){
         this->currentOutput.low();
-        this->currentPin060.low();
-        this->currentPin120.low();
+        //this->currentPin060.low();
+        //this->currentPin120.low();
     }
     
 
