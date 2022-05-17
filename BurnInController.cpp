@@ -159,7 +159,7 @@ void BurnInController::LoadFromMemory() {
 		this->currentSelector.SetCurrent(this->settings.setCurrent);		
 	}
 	for (auto pad : heatingPads) {
-		pad->ChangeSetpoint(this->settings.setTemperature);
+		pad->ChangeSetpoint(DefaultSetPoint);
 	}
 
 	this->currentSelector.SetCurrent(this->settings.setCurrent);
@@ -173,21 +173,21 @@ void BurnInController::CheckStart() {
 		this->systemState.running = true;
 		this->systemState.paused = false;
  		this->TurnOnOffHeat(HeaterState::On);
-		switch(this->systemState.setCurrent){
+/* 		switch(this->systemState.setCurrent){
 			case CurrentValue::c060:{
-				this->burnTimer.lengthSecs=Time60mASecs;
+				//this->burnTimer.lengthSecs=Time60mASecs;
 				break;
 			}
 			case CurrentValue::c120:{
-				this->burnTimer.lengthSecs=Time120mASecs;
+				//this->burnTimer.lengthSecs=Time120mASecs;
 				break;
 			}
 			case CurrentValue::c150:{
-				this->burnTimer.lengthSecs=Time150mASecs;
+				//this->burnTimer.lengthSecs=Time150mASecs;
 				break;
 			}
-		}
-
+		} */
+		this->burnTimer.lengthSecs=long(this->settings.setTemperature*3600l);
 		this->burnTimer.elapsed = this->systemState.elapsed;
 		//this->burnTimer.burnInStartTime = millisTime() - this->burnTimer.elapsed;
 		this->burnTimer.running = true;
@@ -256,8 +256,8 @@ void BurnInController::ToggleHeating() {
 		ret=pad->ToggleHeating();
 	}
 	if (ret) {
-		this->systemState.tempSP=this->settings.setTemperature;
-		Serial.println(message_table[SettingTempToMsg] + String(this->settings.setTemperature) + "}");
+		this->systemState.tempSP=DefaultSetPoint;//this->settings.setTemperature;
+		Serial.println(message_table[SettingTempToMsg] + String(DefaultSetPoint) + "}");
 	} else {
 		this->systemState.tempSP=0;
 		Serial.println(message_table[SetTempToZeroMsg]);
@@ -269,7 +269,7 @@ void BurnInController::TurnOnOffHeat(HeaterState state) {
 		pad->SetState(state);
 	}
 	if(state==HeaterState::On){
-		this->systemState.tempSP=this->settings.setTemperature;
+		this->systemState.tempSP=DefaultSetPoint;
 	}else{
 		this->systemState.tempSP=0;
 	}
@@ -280,9 +280,11 @@ void BurnInController::StartTest() {
 		limitArray[c] = false;
 	}
 	if (this->systemState.tempsOk=1) {
-		switch(this->systemState.setCurrent){
+		
+/* 		switch(this->systemState.setCurrent){
+			
 			case CurrentValue::c060:{
-				this->burnTimer.lengthSecs=Time60mASecs;
+				this->burnTimer.lengthSecs=long(this->settings.setTemperature*3600);
 				break;
 			}
 			case CurrentValue::c120:{
@@ -292,8 +294,10 @@ void BurnInController::StartTest() {
 			case CurrentValue::c150:{
 				this->burnTimer.lengthSecs=Time150mASecs;
 				break;
-			}
+			} 
 		}
+*/
+		this->burnTimer.lengthSecs=long(this->settings.setTemperature*3600);
 		this->systemState.elapsed = 0;
 		this->systemState.running = true;
 		this->systemState.paused = false;
@@ -363,15 +367,17 @@ void BurnInController::ToggleCurrent() {
 		this->systemState.setCurrent=setCurrent;
 		switch(this->systemState.setCurrent){
 			case CurrentValue::c060:{
-				this->burnTimer.lengthSecs=Time60mASecs;
+				//this->settings.setTemperature*
+				//this->systemState.tempSP
+				//this->burnTimer.lengthSecs=Time60mASecs;
 				break;
 			}
 			case CurrentValue::c120:{
-				this->burnTimer.lengthSecs=Time120mASecs;
+				//this->burnTimer.lengthSecs=Time120mASecs;
 				break;
 			}
 			case CurrentValue::c150:{
-				this->burnTimer.lengthSecs=Time150mASecs;
+				//this->burnTimer.lengthSecs=Time150mASecs;
 				break;
 			}
 		}
@@ -383,7 +389,9 @@ void BurnInController::ToggleCurrent() {
 }
 
 bool BurnInController::CheckSettings(SystemSettings newSettings){
-	return (newSettings.setCurrent==CurrentValue::c060 || newSettings.setCurrent==CurrentValue::c120 || newSettings.setCurrent==CurrentValue::c150) 
+	return (newSettings.setCurrent==CurrentValue::c060 
+	|| newSettings.setCurrent==CurrentValue::c120 
+	|| newSettings.setCurrent==CurrentValue::c150) 
 	&& (newSettings.setTemperature>0 && newSettings.setTemperature<100);
 }
 
@@ -446,7 +454,7 @@ void BurnInController::HandleSerial() {
 				this->currentSelector.SetCurrent(this->settings.setCurrent);
 				this->systemState.setCurrent=this->settings.setCurrent;
 				for(auto heater:heatingPads){
-					heater->ChangeSetpoint(this->settings.setTemperature);
+					heater->ChangeSetpoint(DefaultSetPoint);
 				}
 				if (this->settingsAddr != 0) {
 					EEPROM_write(this->settingsAddr, this->settings);

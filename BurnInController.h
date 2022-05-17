@@ -74,7 +74,7 @@ struct SystemSettings {
 	}
 
 	void Print() {
-		cout<<"[T]{"<<"System Settings: "<< "Switch?: " << switchingEnabled << " Default Current: "<<int(setCurrent)<< " Temp:: " << setTemperature <<"}"<<endl;
+		cout<<"[T]{"<<"System Settings: "<< "Switch?: " << switchingEnabled << " Default Current: "<<int(setCurrent)<< " Time:: " << setTemperature <<"}"<<endl;
 	}
 };
 

@@ -63,6 +63,7 @@ enum CurrentValue:int{
 #define TempPin3		        A8
 
 //Time Constants
+#define TimeConvert             (unsigned long)3600000
 #define BurnTime120 	        (unsigned long)72000000 //20Hrs
 #define BurnTime60		        BurnTime120
 #define BurnTime150 	        (unsigned long)25200000  //7hrs

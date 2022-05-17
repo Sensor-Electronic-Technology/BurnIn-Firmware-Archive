@@ -3,6 +3,8 @@
         "istream": "cpp",
         "istream_helpers": "cpp",
         "serstream": "cpp",
-        "vector": "cpp"
+        "vector": "cpp",
+        "associative_base": "cpp",
+        "valarray": "cpp"
     }
 }
