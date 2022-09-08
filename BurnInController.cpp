@@ -471,7 +471,7 @@ void BurnInController::privateLoop() {
 		this->realArray[9] = this->burnTimer.elapsed*TPeriod;
 		if (done) {
 			this->currentSelector.TurnOff();
-			//this->TurnOnOffHeat(HeaterState::Off);
+			this->TurnOnOffHeat(HeaterState::Off);
 			this->systemState.running = false;
 			this->systemState.paused = false;
 			this->systemState.elapsed=0;
