@@ -9,10 +9,7 @@ using namespace std;
 class TemperatureSensor:public Component{
 public:
 	TemperatureSensor(PinNumber pin) :Component(),input(pin),temperature(0) {
-//		RegisterChild(this->readTimer);
-/* 		this->readTimer.onInterval([&]() {
-			this->Read();
-		}, tempReadTime); */
+
 	}
 
 	float Read(){
