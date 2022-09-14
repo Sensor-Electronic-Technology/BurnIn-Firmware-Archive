@@ -19,7 +19,7 @@ public:
 		double aValue = this->input.read();
 		double ntc_res=Rref/(MaxADC/aValue-1);
 		//Steinhart and Hart Equation 1/A+Bln(R)+C[ln(R)]^3  
-		double temp=1/(A_Value+(B_Value*log(ntc_res))+(C_Value*pow(log(ntc_res),3)));
+		double temp=(1/(A_Value+(B_Value*log(ntc_res))+(C_Value*pow(log(ntc_res),3))))-273.15;
 		this->temperature+=(temp-this->temperature)*tempfilter;
 		return this->temperature;
 	}
