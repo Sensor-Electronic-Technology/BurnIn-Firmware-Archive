@@ -13,10 +13,10 @@ enum HeaterState {
 
 class HeatingPad:public Component{
 public:
-	HeatingPad(PinNumber sensorPin,PinNumber heatPin) 
+	HeatingPad(PinNumber sensorPin,PinNumber heatPin,float a,float b,float c) 
 		:Component(),
 		output(heatPin), 
-		tempSensor(sensorPin) {
+		tempSensor(sensorPin,a,b,c) {
 		
 		this->lastErr = this->err;
 		//this->err = this->tempSP - this->temperature;

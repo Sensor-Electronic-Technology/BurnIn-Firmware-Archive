@@ -4,6 +4,20 @@
 #include <avr/pgmspace.h>
 #include <EEPROM.h>
 
+//NTC-1 Values
+#define NTC1_A	1.945714e-3f
+#define NTC1_B  2.3702e-5f
+#define NTC1_C  1.545e-6f
+//NTC-2 Values
+#define NTC2_A	1.945714e-3f
+#define NTC2_B  2.3702e-5f
+#define NTC2_C  1.545e-6f
+//NTC-3 Values
+#define NTC3_A	1.945714e-3f
+#define NTC3_B  2.3702e-5f
+#define NTC3_C  1.545e-6f
+#define Rref	1000
+
 template <class T> int EEPROM_write(int addr, const T& value) {
     const byte* p = (const byte*)(const void*)&value;
     int newAddr;
