@@ -5,17 +5,17 @@
 #include <EEPROM.h>
 
 //NTC-1 Values
-#define NTC1_A	1.945714e-3f
-#define NTC1_B  2.3702e-5f
-#define NTC1_C  1.545e-6f
+#define NTC1_A	9.362e-4f
+#define NTC1_B  2.067e-4f
+#define NTC1_C  6.297e-7f
 //NTC-2 Values
-#define NTC2_A	1.945714e-3f
-#define NTC2_B  2.3702e-5f
-#define NTC2_C  1.545e-6f
+#define NTC2_A	1.276e-3f
+#define NTC2_B  1.512e-4f
+#define NTC2_C  8.422e-7f
 //NTC-3 Values
-#define NTC3_A	1.945714e-3f
-#define NTC3_B  2.3702e-5f
-#define NTC3_C  1.545e-6f
+#define NTC3_A	6.103e-4f
+#define NTC3_B  2.890e-4f
+#define NTC3_C  8.362e-8f
 #define Rref	1000
 
 template <class T> int EEPROM_write(int addr, const T& value) {
@@ -45,8 +45,8 @@ enum CurrentValue:int{
 #define StartAddr               255
 
 //LED Control
-#define CurrentPin		        2
-#define Pin120mA		        6
+#define CurrentPin		          2
+#define Pin120mA		            6
 #define Pin60mA                 7
 
 
@@ -56,12 +56,12 @@ enum CurrentValue:int{
 #define heatPin3		        5
 
 //Probes
-#define Probe1			        A0
-#define Probe2			        A1
-#define Probe3			        A2
-#define Probe4			        A3
-#define Probe5			        A4
-#define Probe6			        A5
+#define Probe1			            A0
+#define Probe2			            A1
+#define Probe3			            A2
+#define Probe4			            A3
+#define Probe5			            A4
+#define Probe6			            A5
 
 #define Current1                A9
 #define Current2                A10
@@ -72,9 +72,9 @@ enum CurrentValue:int{
 
 
 //Temp Sensors
-#define TempPin1		        A6
-#define TempPin2		        A7
-#define TempPin3		        A8
+#define TempPin1		            A6
+#define TempPin2		            A7
+#define TempPin3		            A8
 
 //Time Constants
 #define BurnTime120 	        (unsigned long)72000000 //20Hrs
@@ -86,8 +86,8 @@ enum CurrentValue:int{
 //#define Time150mASecs           (unsigned long)30
 #define TPeriod                 5
 #define TFactor                 1000
-#define COMPERIOD		        250
-#define UPDATEPERIOD	        50
+#define COMPERIOD		            250
+#define UPDATEPERIOD	            50
 #define ResetDelay              250
 #define TestProbeDelay          2000
 #define EEPROMPERIOD            10000

@@ -134,15 +134,15 @@ void BurnInController::SetupIO() {
 	this->currentSensors.push_back(sensor6);
 	RegisterChild(sensor6);
 
-	HeatingPad* pad1 = new HeatingPad(TempPin1, heatPin1);
+	HeatingPad* pad1 = new HeatingPad(TempPin1, heatPin1,NTC1_A,NTC1_B,NTC1_C);
 	this->heatingPads.push_back(pad1);
 	RegisterChild(pad1);
 
-	HeatingPad* pad2 = new HeatingPad(TempPin2, heatPin2);
+	HeatingPad* pad2 = new HeatingPad(TempPin2, heatPin2,NTC2_A,NTC2_B,NTC2_C);
 	this->heatingPads.push_back(pad2);
 	RegisterChild(pad2);
 
-	HeatingPad* pad3 = new HeatingPad(TempPin3, heatPin3);
+	HeatingPad* pad3 = new HeatingPad(TempPin3, heatPin3,NTC3_A,NTC3_B,NTC3_C);
 	this->heatingPads.push_back(pad3);
 	RegisterChild(pad3);	
 }

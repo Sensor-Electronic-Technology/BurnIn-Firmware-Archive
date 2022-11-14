@@ -11,7 +11,7 @@ using namespace std;
 class TemperatureSensor:public Component{
 public:
 	TemperatureSensor(PinNumber pin,float a,float b,float c) :Component(),input(pin),
-		temperature(0),aValue(a),bValue(b),cValue(c) {	}
+		temperature(0),aValue(a),bValue(b),cValue(c) {    }
 
 	float Read(){
 		double aValue = this->input.read();
@@ -30,9 +30,9 @@ private:
 	AnalogInput input;
 	Timer readTimer;
 	float temperature=0;
-	float aValue=0.0f;
-	float bValue=0.0f;
-	float cValue=0.0f;
+	float aValue;
+	float bValue;
+	float cValue;
 
 
 	void privateLoop() {
