@@ -145,6 +145,7 @@ void BurnInController::SetupIO() {
 	HeatingPad* pad3 = new HeatingPad(TempPin3, heatPin3,NTC3_A,NTC3_B,NTC3_C);
 	this->heatingPads.push_back(pad3);
 	RegisterChild(pad3);	
+  std::cout<<"NTC3_A: "<< NTC3_A<<std::endl; 
 }
 
 void BurnInController::LoadFromMemory() {
