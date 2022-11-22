@@ -5,17 +5,17 @@
 #include <EEPROM.h>
 
 //NTC-1 Values
-#define NTC1_A	1.024e-3f
-#define NTC1_B  1.909e-4f
-#define NTC1_C  7.058e-7f
+#define NTC1_A	1.297e-3f
+#define NTC1_B  1.494e-4f
+#define NTC1_C  8.360e-7f
 //NTC-2 Values
-#define NTC2_A	1.039e-3f
-#define NTC2_B  1.858e-4f
-#define NTC2_C  7.376e-7f
+#define NTC2_A	1.167e-3f
+#define NTC2_B  1.579e-4f
+#define NTC2_C  8.823e-7f
 //NTC-3 Values
-#define NTC3_A	6.141e-4f
-#define NTC3_B  2.780e-4f
-#define NTC3_C  1.991e-7f
+#define NTC3_A	1.221e-3f
+#define NTC3_B  1.647e-4f
+#define NTC3_C  7.488e-7f
 #define Rref	1000
 
 template <class T> int EEPROM_write(int addr, const T& value) {
