@@ -280,37 +280,34 @@ void BurnInController::StartTest() {
 	for (int c = 0; c <= 5; c++) {
 		limitArray[c] = false;
 	}
-	if (this->systemState.tempsOk=1) {
-		switch(this->systemState.setCurrent){
-			case CurrentValue::c060:{
-				this->burnTimer.lengthSecs=Time60mASecs;
-				break;
-			}
-			case CurrentValue::c120:{
-				this->burnTimer.lengthSecs=Time120mASecs;
-				break;
-			}
-			case CurrentValue::c150:{
-				this->burnTimer.lengthSecs=Time150mASecs;
-				break;
-			}
+	this->TurnOnOffHeat(HeaterState::On);
+	switch(this->systemState.setCurrent){
+		case CurrentValue::c060:{
+			this->burnTimer.lengthSecs=Time60mASecs;
+			break;
 		}
-		this->systemState.elapsed = 0;
-		this->systemState.running = true;
-		this->systemState.paused = false;
-		this->settingsAddr = EEPROM_write(StartAddr, this->systemState);
-		this->burnTimer.start();
-		this->currentSelector.SetCurrent(this->systemState.setCurrent);
-		this->currentSelector.TurnOn();
-		unsigned long timeLeft = this->burnTimer.lengthSecs;
-		unsigned long hrs = timeLeft / 3600;
-		unsigned long mins = (timeLeft / 60) % 60;
-		unsigned long seconds = (timeLeft % 60);
-		String time = String(hrs) + ':' + String(mins) + ':' + String(seconds);
-		Serial.println("[T]{Starting " + String(this->systemState.setCurrent) + "mA Test Now:Runtime= " + time + "}");
-	} else {
-		Serial.println(message_table[NotInRangeMsg]);
+		case CurrentValue::c120:{
+			this->burnTimer.lengthSecs=Time120mASecs;
+			break;
+		}
+		case CurrentValue::c150:{
+			this->burnTimer.lengthSecs=Time150mASecs;
+			break;
+		}
 	}
+	this->systemState.elapsed = 0;
+	this->systemState.running = true;
+	this->systemState.paused = false;
+	this->settingsAddr = EEPROM_write(StartAddr, this->systemState);
+	this->burnTimer.start();
+	this->currentSelector.SetCurrent(this->systemState.setCurrent);
+	this->currentSelector.TurnOn();
+	unsigned long timeLeft = this->burnTimer.lengthSecs;
+	unsigned long hrs = timeLeft / 3600;
+	unsigned long mins = (timeLeft / 60) % 60;
+	unsigned long seconds = (timeLeft % 60);
+	String time = String(hrs) + ':' + String(mins) + ':' + String(seconds);
+	Serial.println("[T]{Starting " + String(this->systemState.setCurrent) + "mA Test Now:Runtime= " + time + "}");
 }
 
 void BurnInController::Reset() {
